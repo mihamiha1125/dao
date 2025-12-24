@@ -1,0 +1,483 @@
+プロジェクト
+
+アップグレード
+
+コラボレーション
+
+共有
+以下のコードをgithub対応のコードにしてください。
+index.html
+pasted_content.txt
+テキスト · 20.49 KB
+承知しました。アップロードされたファイルを確認して、GitHub対応のコードに修正いたします。
+アップロードされたindex.htmlの内容を確認し、GitHub Pages対応の修正内容を検討します。
+
+index.htmlから相対パスの修正や不要な重複
+
+<body>タグを整理し、GitHub Pages対応に反映する必要があると気付いた。次は修正案を考える。
+
+    index.htmlの内容を確認し、相対パス修正と不要な
+
+    <body>タグ整理の必要性を再認識。次は具体的な修正案を検討する。
+
+        GitHub Pages対応のindex.htmlファイルを作成しました。主な修正点は以下の通りです。
+        修正内容
+        1. パス指定の修正
+        CSSファイル: /css/style.css → ./css/style.css
+        JavaScriptファイル: js/app.js → ./js/app.js
+        画像ファイル: img/ → ./img/
+        内部リンク: /index.html → ./index.html
+        2. HTMLタグの重複削除
+        重複していた
+
+        <body>タグを削除
+            重複していた<main id="top">タグを削除
+                3. リンクの修正
+                ナビゲーションメニュー内のリンクを修正
+                .index.html → ./index.html
+                .index.html#company → ./index.html#company
+                フッターのリンクも相対パスに統一
+                4. 画像パスの修正
+                .img/備前焼について.JPG → ./img/備前焼について.JPG
+                その他すべての画像パスを相対パス(./img/)に統一
+                5. サブディレクトリのリンク修正
+                minor-elements-set/ → ./minor-elements-set/
+                GitHub Pagesでの利用方法
+                GitHubリポジトリのルートディレクトリに修正済みのindex.htmlを配置
+                以下のディレクトリ構造を維持してください:
+                Plain Text
+                /
+                ├── index.html
+                ├── css/
+                │ └── style.css
+                ├── js/
+                │ └── app.js
+                ├── img/
+                │ └── (各種画像ファイル)
+                ├── minor-elements-set/
+                │ └── (各種HTMLファイル)
+                └── 作家さん/
+                └── (作家紹介HTMLファイル)
+                GitHub Pagesの設定でブランチを指定して公開
+                修正済みファイルを添付しましたので、ご確認ください。
+                index.html
+                コード · 18.05 KB
+
+                このタスク内のすべてのファイルを表示
+                タスクが完了しました
+                この結果はどうでしたか？
+                このメッセージのために無料のManus 1.6トライアルを獲得しました！アップグレードして、より洗練された高品質な回答を受け取り続けましょう。
+
+
+                アップグレード
+                おすすめの追跡質問
+                Manus にメッセージを送る
+
+                Manus アプリをダウンロード
+
+                タスクが完了したら通知を受け取る
+
+                index.html
+                <!doctype html>
+                <html lang="ja">
+
+                <head>
+                    <meta charset="utf-8" />
+                    <title>BizenDAO｜NFTで創る伝統工芸の未来</title>
+                    <meta name="viewport" content="width=device-width, initial-scale=1" />
+                    <meta name="description"
+                        content="確かな歴史を新たな技術で。NFTで創る伝統工芸の未来。BizenDAOは備前焼をはじめとする伝統工芸をブロックチェーン上に記録・共有するプロジェクトです。" />
+                    <link rel="stylesheet" href="./css/style.css" />
+                </head>
+
+                <body>
+
+                    <!-- ================= Header ================= -->
+                    <header class="site-header">
+                        <div class="container header-inner">
+                            <a href="#top" class="logo">BizenDAO</a>
+
+                            <div class="header-right">
+                                <button class="lang-toggle" type="button">EN/JP</button>
+                                <button class="nav-toggle" type="button" aria-label="メニューを開閉">
+                                    <span></span><span></span>
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="nav-overlay"></div>
+                        <aside class="nav-drawer" aria-label="サイトメニュー">
+                            <ul class="drawer-nav">
+                                <li><a href="./index.html">トップページ</a></li>
+                                <li><a href="./product-list.html">商品一覧</a></li>
+                                <li><a href="./artist-list.html">作家紹介</a></li>
+                                <li><a href="./index.html#company">会社概要</a></li>
+                                <li><a href="./index.html#discord">Discordリンク</a></li>
+                                <li><a href="./index.html#meta">Meta</a></li>
+                                <li><a href="./index.html#donation">寄付</a></li>
+                            </ul>
+                        </aside>
+                    </header>
+
+                    <!-- ================= Main ================= -->
+                    <main id="top">
+
+                        <!-- Hero -->
+                        <section class="hero">
+                            <div class="hero-media">
+                                <img src="./img/トップ画.JPG" alt="陶芸の作業風景" />
+                            </div>
+                            <div class="hero-overlay"></div>
+                            <div class="container hero-content">
+                                <h1 class="hero-title">確かな歴史を新たな技術で。</h1>
+                                <p class="hero-sub">NFTで創る伝統工芸の未来</p>
+                            </div>
+                        </section>
+
+                        <!-- Bizen CTA -->
+                        <section class="section bizen-cta">
+                            <div class="bizen-media">
+                                <img src="./img/備前焼について.JPG" alt="備前焼の素材" />
+                            </div>
+                            <div class="bizen-overlay"></div>
+                            <div class="container bizen-inner">
+                                <a href="#products" class="bizen-btn">
+                                    備前焼について<span class="arrow">→</span>
+                                </a>
+                            </div>
+                        </section>
+
+                        <!-- ================= Web3版の箱書 ================= -->
+                        <section class="section section-panel">
+                            <div class="container" style="text-align:center;">
+
+                                <p style="
+            margin: 0 0 12px;
+            font-size: 14px;
+            letter-spacing: .18em;
+            opacity: .8;
+        ">
+                                    にほんろっこよう
+                                </p>
+
+                                <h2 class="section-title section-title--big" style="margin-bottom:32px;">
+                                    日本六古窯
+                                </h2>
+
+                                <figure style="margin:0 auto 24px; max-width:720px;">
+                                    <img src="./img/IMG_3571.JPG" alt="web3版の箱書 概念図" style="
+                    width:100%;
+                    height:auto;
+                    display:block;
+                    margin-inline:auto;
+                " />
+                                </figure>
+
+                                <p style="
+            max-width:720px;
+            margin:0 auto;
+            font-size:13px;
+            line-height:2.1;
+            color:#d0d0d0;
+        ">
+                                    中世から現在に至るまで生産が継続されている代表的な6つの陶磁器産地の総称です。<br>
+                                    2017年春には日本遺産に認定されました。<br>
+                                    岡山県の伝統工芸である「備前焼」もその一つです。
+                                </p>
+
+                            </div>
+                        </section>
+
+
+                        <!-- Products -->
+                        <section id="products" class="section section-panel">
+                            <div class="container">
+                                <h2 class="section-title section-title--big">商品紹介</h2>
+
+                                <div class="slider" data-slider="products">
+                                    <button class="slider-arrow slider-arrow--left">◀</button>
+
+                                    <div class="slider-track">
+
+                                        <!-- 1ページ目 -->
+                                        <div class="slider-item slider-item--active">
+                                            <div class="product-grid">
+                                                <figure class="product-card">
+                                                    <img src="./img/商品①.jpeg" alt="商品1" />
+                                                    <figcaption>
+                                                        <span class="product-author">森 敏彰</span>
+                                                        <span class="product-title">矢筒口花入 No.1</span>
+                                                    </figcaption>
+                                                </figure>
+
+                                                <figure class="product-card">
+                                                    <img src="./img/商品③.jpeg" alt="商品2" />
+                                                    <figcaption>
+                                                        <span class="product-author">森 敏彰</span>
+                                                        <span class="product-title">矢筒口花入 No.2</span>
+                                                    </figcaption>
+                                                </figure>
+                                            </div>
+                                        </div>
+
+                                        <!-- 2ページ目（商品3のみ差し替え済） -->
+                                        <div class="slider-item">
+                                            <div class="product-grid">
+                                                <figure class="product-card">
+                                                    <img src="./img/商品③.jpeg" alt="商品3" />
+                                                    <figcaption>
+                                                        <span class="product-author">作家名A</span>
+                                                        <span class="product-title">作品タイトルA</span>
+                                                    </figcaption>
+                                                </figure>
+
+                                                <figure class="product-card">
+                                                    <img src="./img/商品③.jpeg" alt="商品4" />
+                                                    <figcaption>
+                                                        <span class="product-author">作家名B</span>
+                                                        <span class="product-title">作品タイトルB</span>
+                                                    </figcaption>
+                                                </figure>
+                                            </div>
+                                        </div>
+
+                                    </div>
+                                    <button class="slider-arrow slider-arrow--right">▶</button>
+                                </div>
+                            </div>
+                        </section>
+
+                        <!-- Video -->
+                        <section class="section video-section">
+                            <div class="video-media">
+                                <img src="./img/動画挿入.JPG" alt="備前焼の動画" />
+                            </div>
+                            <div class="video-overlay"></div>
+                            <div class="container video-inner">
+                                <p class="video-label">＜動画挿入＞</p>
+                            </div>
+                        </section>
+
+                        <!-- Artists -->
+                        <section id="artists" class="section section-panel">
+                            <div class="container">
+                                <h2 class="section-title section-title--big">作家紹介</h2>
+
+                                <div class="artist-slider" data-artist-slider>
+                                    <button class="artist-arrow artist-arrow--left" type="button"
+                                        aria-label="前へ">◀</button>
+
+                                    <div class="artist-viewport">
+                                        <div class="artist-track">
+                                            <!-- 1 -->
+                                            <a class="artist-slide" href="./作家さん/artist-mori-toshiaki.html">
+                                                <figure class="artist-card">
+                                                    <img src="./img/ギャラリー①.jpeg" alt="森 敏彰" />
+                                                </figure>
+                                                <div class="artist-text">
+                                                    <h3>森 敏彰</h3>
+                                                    <p>不完全さの中に美しさを受け入れる侘び寂びを体現した作品。</p>
+                                                </div>
+                                            </a>
+
+                                            <!-- 2 -->
+                                            <a class="artist-slide" href="./作家さん/artist-mori-taiga.html">
+                                                <figure class="artist-card">
+                                                    <img src="./img/ギャラリー②.jpg" alt="森 大雅" />
+                                                </figure>
+                                                <div class="artist-text">
+                                                    <h3>森 大雅</h3>
+                                                    <p>森風来の窯を継承し、自然の力強さを作品に込めている。</p>
+                                                </div>
+                                            </a>
+
+                                            <!-- 3（敏明さん：画像は差し替え） -->
+                                            <a class="artist-slide" href="./作家さん/artist-fujita-syo.html">
+                                                <figure class="artist-card">
+                                                    <img src="./img/IMG_3501.JPG" alt="藤田 祥" />
+                                                </figure>
+                                                <div class="artist-text">
+                                                    <h3>藤田 祥</h3>
+                                                    <p>（キャッチ文は仮）備前の土と炎が生む表情を、静かな造形へ。</p>
+                                                </div>
+                                            </a>
+                                        </div>
+                                    </div>
+
+                                    <button class="artist-arrow artist-arrow--right" type="button"
+                                        aria-label="次へ">▶</button>
+                                </div>
+                            </div>
+                        </section>
+
+
+                        <!-- Company header -->
+                        <section id="company" class="section company-head">
+                            <div class="container company-head-inner">
+                                <p class="company-head-ja">会社概要</p>
+                                <p class="company-head-en">COMPANY</p>
+                            </div>
+
+                            <div class="company-hero">
+                                <div class="company-hero-media">
+                                    <!-- company.JPG を使用 -->
+                                    <img src="./img/company.JPG" alt="ろくろの上の備前焼" />
+                                </div>
+                                <div class="company-hero-overlay"></div>
+                                <div class="container company-hero-content">
+                                    <h3>ブロックチェーンに結びつく伝統工芸品</h3>
+                                    <p>信頼の置ける情報をブロックチェーンが保護します。</p>
+                                </div>
+                            </div>
+                        </section>
+
+                        <!-- Company detail -->
+                        <section class="section section-panel company-detail">
+                            <div class="container">
+                                <h3 class="company-subtitle">企業理念</h3>
+                                <p class="company-body">
+                                    日本遺産に認定された六古窯の一つ、千年の歴史をもつ「備前焼」。<br>
+                                    私たちは、この伝統工芸文化の継承と発展に貢献していきます。
+                                </p>
+
+                                <h3 class="company-subtitle company-subtitle--mt">事業内容</h3>
+                                <p class="company-body">
+                                    BizenDAOは、企業理念に共感する陶芸家・窯元・ギャラリーなどの作り手と世界中のファンが交流し、より深く「備前焼」を楽しむためのDAOです。<br>
+                                    岡山・備前地域の伝統工芸と地方創生を応援するソーシャルDAOとして設立された非営利組織です。<br>
+                                    運営資金は、NFT付き備前焼作品の購入者からの寄付によって支えられています。<br>
+                                    その仕組みを構築・支援する運営者やサポーターもDAOの一員として参加しています。<br>
+                                    NFT付き備前焼を所有された方は、自動的にBizenDAOメンバーとなり、<br>
+                                    NFTを持っていない方でも、Discordコミュニティを通じて自由に参加・交流することができます。
+                                </p>
+                            </div>
+                        </section>
+
+                        <!-- Tech strips -->
+                        <section class="section section-panel tech-section">
+                            <div class="container tech-inner">
+
+                                <!-- NFT -->
+                                <a class="tech-item" href="./minor-elements-set/nft.html" aria-label="NFTの詳細へ">
+                                    <div class="tech-media">
+                                        <img src="./img/NFT.JPG" alt="NFT" />
+                                        <div class="tech-media-label">NFT</div>
+                                    </div>
+                                    <p class="tech-caption">
+                                        ブロックチェーンに刻む情報がNFTの本来の価値であるべきだと考えます。
+                                    </p>
+                                </a>
+
+                                <!-- RWA（NFTの下に追加） -->
+                                <a class="tech-item" href="./minor-elements-set/rwa.html" aria-label="RWAの詳細へ">
+                                    <div class="tech-media">
+                                        <!-- 画像は後で差し替えOK（仮） -->
+                                        <img src="./img/IMG_3592.JPG" alt="RWA" />
+                                        <div class="tech-media-label">RWA</div>
+                                    </div>
+                                    <p class="tech-caption">
+                                        現実資産（作品）にNFTを紐づけ、リアルワールドアセットとして取り扱います。
+                                    </p>
+                                </a>
+
+                                <!-- Arweave -->
+                                <a class="tech-item" href="./minor-elements-set/arweave.html" aria-label="Arweaveの詳細へ">
+                                    <div class="tech-media">
+                                        <img src="./img/Arweave.JPG" alt="Arweave" />
+                                        <div class="tech-media-label">Arweave</div>
+                                    </div>
+                                    <p class="tech-caption">
+                                        革新的な分散型ストレージで、データの永続性とセキュリティを最大限に強化します。
+                                    </p>
+                                </a>
+
+                                <!-- Token Bound Account -->
+                                <a class="tech-item" href="./minor-elements-set/tba.html"
+                                    aria-label="Token Bound Accountの詳細へ">
+                                    <div class="tech-media">
+                                        <img src="./img/Wallet.JPG" alt="Token Bound Account" />
+                                        <div class="tech-media-label">Token Bound Account</div>
+                                    </div>
+                                    <p class="tech-caption">
+                                        陶器が個々に独立し自らのウォレットを持つことができます
+                                    </p>
+                                </a>
+
+                                <!-- SBT -->
+                                <a class="tech-item" href="./minor-elements-set/sbt.html" aria-label="SBTの詳細へ">
+                                    <div class="tech-media">
+                                        <img src="./img/Token Bound Account.JPG" alt="SBT" />
+                                        <div class="tech-media-label">SBT</div>
+                                    </div>
+                                    <p class="tech-caption">
+                                        譲渡不能な重要なデータを格納して魂を持たせます
+                                    </p>
+                                </a>
+
+                            </div>
+                        </section>
+
+
+
+
+                        <!-- Discord link -->
+                        <section id="discord" class="section section-panel link-section">
+                            <div class="container">
+                                <h2 class="section-title section-title--big">Discordリンク</h2>
+                                <p class="link-lead">備前焼とDAOの思想をつなぐコミュニティ</p>
+                                <p class="link-sub">
+                                    職人、アートファン、Web3に興味のある人など誰でも参加できます。
+                                </p>
+                                <div class="section-cta">
+                                    <a href="#" class="outline-btn outline-btn--large">
+                                        こちらから<span class="arrow">→</span>
+                                    </a>
+                                </div>
+                            </div>
+                        </section>
+
+                        <!-- Meta link -->
+                        <section id="meta" class="section section-panel link-section">
+                            <div class="container">
+                                <h2 class="section-title section-title--big">Meta</h2>
+                                <p class="link-lead">
+                                    作品のデジタル情報（メタデータ）を管理・登録する場所
+                                </p>
+                                <p class="link-sub">
+                                    タイトルや概要、画像・3Dデータ・PDFなどを入力し、<br>
+                                    JSON形式でダウンロード・共有することができます。
+                                </p>
+                                <div class="section-cta">
+                                    <a href="./meta.html" class="outline-btn outline-btn--large">
+                                        こちらから<span class="arrow">→</span>
+                                    </a>
+                                </div>
+                            </div>
+                        </section>
+
+                        <!-- （寄付セクションが後で増える場合のアンカー） -->
+                        <div id="donation"></div>
+
+                    </main>
+
+                    <!-- ================= Footer ================= -->
+                    <footer class="site-footer">
+                        <div class="container footer-inner">
+                            <nav class="footer-nav">
+                                <ul>
+                                    <li><a href="./index.html">トップページ</a></li>
+                                    <li><a href="./product-list.html">商品一覧</a></li>
+                                    <li><a href="./artist-list.html">作家紹介</a></li>
+                                    <li><a href="#company">会社概要</a></li>
+                                    <li><a href="#discord">Discordリンク</a></li>
+                                    <li><a href="./meta.html">Meta</a></li>
+                                    <li><a href="#donation">寄付</a></li>
+                                </ul>
+                            </nav>
+                            <div class="footer-logo">BizenDAO</div>
+                        </div>
+                    </footer>
+
+                    <script src="./js/app.js"></script>
+                </body>
+
+                </html>

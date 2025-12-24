@@ -1,0 +1,41 @@
+[
+    {
+        "id": "bizen01",
+        "artistKey": "mori-toshiaki",
+        "artistName": "森 敏彰",
+        "kilnKey": "niya",
+        "kilnName": "NIYA",
+        "categoryKey": "flower-vase",
+        "categoryName": "花器 / 花入",
+        "title": "矢筒口花入 No.1",
+        "priceJPY": 96800,
+        "image": "./img/商品①.jpeg",
+        "baseUrl": "https://wts.rei-japan.store/items/115722352"
+    },
+    {
+        "id": "bizen02",
+        "artistKey": "mori-toshiaki",
+        "artistName": "森 敏彰",
+        "kilnKey": "niya",
+        "kilnName": "NIYA",
+        "categoryKey": "flower-vase",
+        "categoryName": "花器 / 花入",
+        "title": "矢筒口花入 No.2",
+        "priceJPY": 96800,
+        "image": "./img/商品③.jpeg",
+        "baseUrl": "https://wts.rei-japan.store/items/115722352"
+    },
+    {
+        "id": "bizen03",
+        "artistKey": "fujita-syo",
+        "artistName": "藤田 祥",
+        "kilnKey": "hozan",
+        "kilnName": "Hozangama",
+        "categoryKey": "tea-bowl",
+        "categoryName": "茶碗 / 湯呑",
+        "title": "地層引き出し茶盌",
+        "priceJPY": 108900,
+        "image": "./img/IMG_3474.JPG",
+        "baseUrl": "https://wts.rei-japan.store/items/115722352"
+    }
+]

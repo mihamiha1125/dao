@@ -1,0 +1,155 @@
+@import url("/css/style.css");
+
+/* ===========================
+   作家一覧ページ（artist-list）
+   =========================== */
+
+.alist-main {
+    min-height: 100vh;
+    background:
+        radial-gradient(1200px 600px at 50% 0%, rgba(255, 255, 255, .08), transparent 60%),
+        linear-gradient(180deg, #14161a 0%, #2a2f39 45%, #6f7a92 100%);
+    padding-top: 92px;
+    /* header fixed想定の逃がし */
+}
+
+.alist-inner {
+    width: min(1120px, 100% - 40px);
+    margin: 0 auto;
+    padding: 40px 0 90px;
+}
+
+/* ---- Hero ---- */
+.alist-hero {
+    text-align: center;
+    padding: 24px 0 46px;
+}
+
+.alist-title {
+    margin: 0;
+    font-family: "Hiragino Mincho ProN", "Yu Mincho", serif;
+    font-size: clamp(34px, 4vw, 54px);
+    letter-spacing: .08em;
+    color: #fff;
+}
+
+.alist-sub {
+    margin: 14px auto 0;
+    max-width: 46em;
+    color: rgba(255, 255, 255, .72);
+    font-size: 14px;
+    line-height: 1.9;
+}
+
+/* ---- Grid ---- */
+.alist-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 54px 44px;
+    margin-top: 14px;
+}
+
+.alist-card {
+    border-radius: 16px;
+}
+
+.alist-link {
+    display: grid;
+    grid-template-rows: auto 1fr;
+    text-decoration: none;
+    color: inherit;
+    border-radius: 18px;
+    overflow: hidden;
+    background: rgba(15, 16, 18, .32);
+    border: 1px solid rgba(255, 255, 255, .12);
+    box-shadow: 0 18px 60px rgba(0, 0, 0, .28);
+    transform: translateY(0);
+    transition: transform .25s ease, box-shadow .25s ease, border-color .25s ease;
+}
+
+.alist-link:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 26px 90px rgba(0, 0, 0, .35);
+    border-color: rgba(255, 255, 255, .18);
+}
+
+.alist-figure {
+    margin: 0;
+    background: rgba(0, 0, 0, .35);
+}
+
+.alist-figure img {
+    width: 100%;
+    height: auto;
+    aspect-ratio: 4 / 3;
+    /* スクショっぽい比率 */
+    object-fit: cover;
+    display: block;
+    filter: saturate(.95) contrast(1.02);
+}
+
+/* ---- Meta ---- */
+.alist-meta {
+    padding: 18px 18px 20px;
+}
+
+.alist-name {
+    margin: 0;
+    font-family: "Hiragino Mincho ProN", "Yu Mincho", serif;
+    font-size: 22px;
+    letter-spacing: .10em;
+    color: #fff;
+}
+
+.alist-desc {
+    margin: 12px 0 18px;
+    color: rgba(255, 255, 255, .72);
+    font-size: 13px;
+    line-height: 1.9;
+}
+
+.alist-cta {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 12px;
+    letter-spacing: .14em;
+    color: rgba(255, 255, 255, .85);
+    padding: 10px 14px;
+    border-radius: 999px;
+    border: 1px solid rgba(255, 255, 255, .22);
+    background: rgba(255, 255, 255, .06);
+}
+
+.alist-cta::after {
+    content: "→";
+    opacity: .9;
+}
+
+/* ---- Responsive ---- */
+@media (max-width: 1024px) {
+    .alist-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 44px 28px;
+    }
+}
+
+@media (max-width: 720px) {
+    .alist-main {
+        padding-top: 84px;
+    }
+
+    .alist-inner {
+        width: min(1120px, 100% - 28px);
+        padding: 26px 0 70px;
+    }
+
+    .alist-grid {
+        grid-template-columns: 1fr;
+        gap: 26px;
+    }
+
+    .alist-meta {
+        padding: 16px 16px 18px;
+    }
+}

@@ -1,0 +1,116 @@
+<!doctype html>
+<html lang="ja">
+
+<head>
+    <meta charset="utf-8" />
+    <title>BizenDAO｜商品詳細</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="stylesheet" href="css/style2.css" />
+</head>
+
+<body>
+    <!-- Header：TOPと同じ想定 -->
+    <header class="site-header product-header">
+        <div class="container header-inner">
+            <a href="index.html#top" class="logo">BizenDAO</a>
+
+            <div class="header-right">
+                <button class="lang-toggle" type="button">EN/JP</button>
+                <button class="nav-toggle" type="button" aria-label="メニューを開閉" aria-expanded="false">
+                    <span></span><span></span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Drawer（右から） -->
+    <div class="nav-overlay" hidden></div>
+    <aside class="nav-drawer" aria-label="サイトメニュー" aria-hidden="true">
+        <ul class="drawer-nav">
+            <li><a href="index.html">トップページ</a></li>
+            <li><a href="/product-list.html">商品一覧</a></li>
+            <li><a href="/artist-list.html">作家紹介</a></li>
+            <li><a href="/index.html#company">会社概要</a></li>
+            <li><a href="/index.html#discord">Discordリンク</a></li>
+            <li><a href="/meta.html">Meta</a></li>
+            <li><a href="/index.html#donation">寄付</a></li>
+        </ul>
+    </aside>
+
+    <main class="plist-main">
+        <div class="plist-page-inner">
+
+            <!-- 戻る -->
+            <div class="pdp-back">
+                <a href="product-list.html" class="pdp-back-link">← 商品一覧へ戻る</a>
+            </div>
+
+            <!-- 商品詳細 -->
+            <section class="pdp" aria-label="商品詳細">
+                <div class="pdp-grid">
+
+                    <div class="pdp-media">
+                        <img id="pdpImage" src="https://picsum.photos/seed/pdp/1200/900" alt="商品画像" />
+                    </div>
+
+                    <div class="pdp-info">
+                        <p id="pdpArtist" class="pdp-artist">作家名</p>
+                        <h1 id="pdpTitle" class="pdp-title">作品タイトル</h1>
+
+                        <p id="pdpPrice" class="pdp-price">0 JPY</p>
+
+                        <div class="pdp-meta">
+                            <div class="pdp-meta-row">
+                                <span class="label">窯</span>
+                                <span id="pdpKiln" class="value">-</span>
+                            </div>
+                            <div class="pdp-meta-row">
+                                <span class="label">カテゴリー</span>
+                                <span id="pdpCategory" class="value">-</span>
+                            </div>
+                        </div>
+
+                        <div class="pdp-actions">
+                            <a id="pdpBuyBtn" class="pdp-buy" href="#" target="_blank" rel="noopener">
+                                購入する（BASE） →
+                            </a>
+                        </div>
+
+                        <!-- 後からNFT機能を付ける場所 -->
+                        <div class="pdp-nft card">
+                            <h2 class="pdp-subtitle">NFT</h2>
+                            <p class="pdp-note">
+                                ※この領域に「NFT取得」「メタデータ確認」「ウォレット接続」などを後から追加します。
+                            </p>
+                        </div>
+
+                    </div>
+                </div>
+            </section>
+
+            <p id="pdpNotFound" class="plist-empty" hidden>商品が見つかりません（URLの id を確認してください）</p>
+
+        </div>
+    </main>
+
+    <footer class="site-footer">
+        <div class="container footer-inner">
+            <nav class="footer-nav">
+                <ul class="drawer-nav">
+                    <li><a href="./index.html">トップページ</a></li>
+                    <li><a href="./product-list.html">商品一覧</a></li>
+                    <li><a href="./artist-list.html">作家紹介</a></li>
+                    <li><a href=".index.html#company">会社概要</a></li>
+                    <li><a href=".index.html#discord">Discordリンク</a></li>
+                    <li><a href="./meta.html">Meta</a></li>
+                    <li><a href=".index.html#donation">寄付</a></li>
+                </ul>
+            </nav>
+            <div class="footer-logo">BizenDAO</div>
+        </div>
+    </footer>
+
+    <script src="js/app2.js"></script>
+</body>
+
+</html>
