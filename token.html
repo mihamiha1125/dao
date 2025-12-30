@@ -36,22 +36,7 @@
       .nft-viewer {
         max-width: 1200px;
         margin: 0 auto;
-        padding: 40px 20px;
-      }
-
-      .viewer-title {
-        text-align: center;
-        font-size: 36px;
-        margin-bottom: 20px;
-        font-family: "Times New Roman", "Hiragino Mincho ProN", serif;
-        letter-spacing: 0.1em;
-      }
-
-      .viewer-subtitle {
-        text-align: center;
-        font-size: 16px;
-        opacity: 0.8;
-        margin-bottom: 40px;
+        padding: 5px 20px;
       }
 
       /* コントロールパネル */
@@ -154,65 +139,73 @@
         color: #ff6666;
       }
 
-      /* NFTグリッド */
-      .nft-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-        gap: 30px;
+      /* NFT詳細表示 */
+      .nft-details {
         margin-top: 40px;
       }
 
-      .nft-card {
+      .nft-display {
         background: rgba(255, 255, 255, 0.05);
         border: 1px solid rgba(255, 255, 255, 0.1);
-        border-radius: 12px;
+        border-radius: 16px;
         overflow: hidden;
-        transition: all 0.3s ease;
-        cursor: pointer;
+        margin-bottom: 40px;
       }
 
-      .nft-card:hover {
-        transform: translateY(-4px);
-        background: rgba(255, 255, 255, 0.08);
-        border-color: rgba(255, 255, 255, 0.3);
-        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+      .nft-header {
+        padding: 30px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
       }
 
-      .nft-image {
-        width: 100%;
-        height: 300px;
-        object-fit: cover;
-        background: #222;
+      .nft-title {
+        font-size: 28px;
+        margin-bottom: 10px;
       }
 
-      .nft-info {
-        padding: 20px;
-      }
-
-      .nft-name {
-        font-size: 18px;
-        font-weight: 600;
-        margin-bottom: 8px;
-      }
-
-      .nft-id {
-        font-size: 14px;
+      .nft-token-id {
+        font-size: 16px;
         opacity: 0.7;
-        margin-bottom: 16px;
+        margin: 0;
         font-family: monospace;
       }
 
-      .nft-attributes {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 8px;
+      .nft-layout {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 40px;
+        padding: 40px;
       }
 
-      .attribute-tag {
-        padding: 4px 12px;
-        background: rgba(255, 255, 255, 0.1);
-        border-radius: 20px;
-        font-size: 12px;
+      @media (max-width: 768px) {
+        .nft-layout {
+          grid-template-columns: 1fr;
+        }
+      }
+
+      .nft-image-container {
+        display: flex;
+        justify-content: center;
+        align-items: flex-start;
+      }
+
+      .nft-main-image {
+        width: 100%;
+        max-width: 400px;
+        height: auto;
+        border-radius: 12px;
+        background: #222;
+      }
+
+      .nft-metadata {
+        display: flex;
+        flex-direction: column;
+        gap: 30px;
+      }
+
+      .metadata-description {
+        line-height: 1.6;
+        opacity: 0.9;
+        margin: 0;
       }
 
       /* ローディング */
@@ -250,82 +243,6 @@
         width: 40px;
         height: 40px;
         margin-bottom: 20px;
-      }
-
-      /* 詳細モーダル */
-      .modal-overlay {
-        position: fixed;
-        inset: 0;
-        background: rgba(0, 0, 0, 0.9);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        z-index: 100;
-        padding: 20px;
-        backdrop-filter: blur(4px);
-      }
-
-      .modal {
-        background: #111318;
-        border-radius: 16px;
-        max-width: 900px;
-        width: 100%;
-        max-height: 90vh;
-        overflow-y: auto;
-        position: relative;
-      }
-
-      .modal-close {
-        position: absolute;
-        top: 20px;
-        right: 20px;
-        background: transparent;
-        border: none;
-        color: #f6f6f6;
-        font-size: 28px;
-        cursor: pointer;
-        width: 40px;
-        height: 40px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        border-radius: 50%;
-        transition: background 0.3s;
-      }
-
-      .modal-close:hover {
-        background: rgba(255, 255, 255, 0.1);
-      }
-
-      .modal-content {
-        padding: 40px;
-      }
-
-      .modal-header {
-        margin-bottom: 30px;
-      }
-
-      .modal-title {
-        font-size: 28px;
-        margin-bottom: 10px;
-      }
-
-      .modal-layout {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 40px;
-      }
-
-      @media (max-width: 768px) {
-        .modal-layout {
-          grid-template-columns: 1fr;
-        }
-      }
-
-      .modal-image {
-        width: 100%;
-        height: auto;
-        border-radius: 12px;
       }
 
       .metadata-section {
@@ -450,17 +367,8 @@
 
       <main>
         <div class="nft-viewer">
-          <h1 class="viewer-title">NFT Token Viewer</h1>
-          <p class="viewer-subtitle">PolygonチェーンのNFT情報を確認</p>
-
-          <!-- ネットワーク表示 -->
-          <div class="network-badge">
-            <span class="network-dot"></span>
-            <span>Polygon Mainnet</span>
-          </div>
-
           <!-- コントロールパネル -->
-          <div class="control-panel">
+          <div v-if="showControlPanel" class="control-panel">
             <div class="input-group">
               <div class="input-field">
                 <label>NFTコントラクトアドレス</label>
@@ -503,40 +411,98 @@
             </div>
           </div>
 
-          <!-- NFTグリッド -->
-          <div v-if="nfts.length > 0" class="nft-grid">
-            <div
-              v-for="nft in nfts"
-              :key="nft.tokenId"
-              class="nft-card"
-              @click="openModal(nft)"
-            >
-              <img
-                :src="nft.image || 'https://via.placeholder.com/300x300?text=No+Image'"
-                :alt="nft.name"
-                class="nft-image"
-                @error="handleImageError"
-              />
-              <div class="nft-info">
-                <h3 class="nft-name">{{ nft.name || 'Unnamed NFT' }}</h3>
-                <p class="nft-id">Token ID: #{{ nft.tokenId }}</p>
-                <div
-                  v-if="nft.attributes && nft.attributes.length > 0"
-                  class="nft-attributes"
-                >
-                  <span
-                    v-for="(attr, index) in nft.attributes.slice(0, 3)"
-                    :key="index"
-                    class="attribute-tag"
+          <!-- NFT詳細表示 -->
+          <div v-if="nfts.length > 0" class="nft-details">
+            <div v-for="nft in nfts" :key="nft.tokenId" class="nft-display">
+              <div class="nft-header">
+                <h2 class="nft-title">{{ nft.name || 'Unnamed NFT' }}</h2>
+                <p class="nft-token-id">Token ID: #{{ nft.tokenId }}</p>
+              </div>
+
+              <div class="nft-layout">
+                <div class="nft-image-container">
+                  <img
+                    :src="nft.image || 'https://via.placeholder.com/400x400?text=No+Image'"
+                    :alt="nft.name"
+                    class="nft-main-image"
+                    @error="handleImageError"
+                  />
+                </div>
+
+                <div class="nft-metadata">
+                  <!-- 説明 -->
+                  <div v-if="nft.description" class="metadata-section">
+                    <h3 class="metadata-title">説明</h3>
+                    <p class="metadata-description">{{ nft.description }}</p>
+                  </div>
+
+                  <!-- 属性 -->
+                  <div
+                    v-if="nft.attributes && nft.attributes.length > 0"
+                    class="metadata-section"
                   >
-                    {{ attr.trait_type }}: {{ attr.value }}
-                  </span>
-                  <span v-if="nft.attributes.length > 3" class="attribute-tag">
-                    +{{ nft.attributes.length - 3 }}
-                  </span>
+                    <h3 class="metadata-title">属性</h3>
+                    <div class="metadata-grid">
+                      <div
+                        v-for="(attr, index) in nft.attributes"
+                        :key="index"
+                        class="metadata-item"
+                      >
+                        <span class="metadata-label"
+                          >{{ attr.trait_type }}</span
+                        >
+                        <span class="metadata-value">{{ attr.value }}</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- コントラクト情報 -->
+                  <div class="metadata-section">
+                    <h3 class="metadata-title">コントラクト情報</h3>
+                    <div class="metadata-grid">
+                      <div class="metadata-item">
+                        <span class="metadata-label">Contract</span>
+                        <span class="metadata-value"
+                          >{{ contractAddress.slice(0, 6) }}...{{
+                          contractAddress.slice(-4) }}</span
+                        >
+                      </div>
+                      <div class="metadata-item">
+                        <span class="metadata-label">Token ID</span>
+                        <span class="metadata-value">{{ nft.tokenId }}</span>
+                      </div>
+                      <div class="metadata-item">
+                        <span class="metadata-label">Token URI</span>
+                        <span class="metadata-value"
+                          >{{ nft.tokenURI || 'N/A' }}</span
+                        >
+                      </div>
+                      <div class="metadata-item">
+                        <span class="metadata-label">Token Standard</span>
+                        <span class="metadata-value">{{ tokenStandard }}</span>
+                      </div>
+                      <div class="metadata-item">
+                        <span class="metadata-label">Network</span>
+                        <span class="metadata-value">Polygon</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- 外部リンク -->
+                  <div class="metadata-section">
+                    <button class="btn" @click="viewOnPolygonScan(nft.tokenId)">
+                      PolygonScanで確認
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
+          </div>
+
+          <!-- ネットワーク表示 -->
+          <div class="network-badge">
+            <span class="network-dot"></span>
+            <span>Polygon Mainnet</span>
           </div>
 
           <!-- ローディングオーバーレイ -->
@@ -545,110 +511,6 @@
               <div class="loading-content">
                 <div class="loading-spinner"></div>
                 <p>NFT情報を読み込み中...</p>
-              </div>
-            </div>
-          </transition>
-
-          <!-- 詳細モーダル -->
-          <transition name="fade">
-            <div v-if="selectedNft" class="modal-overlay" @click="closeModal">
-              <div class="modal" @click.stop>
-                <button class="modal-close" @click="closeModal">×</button>
-                <div class="modal-content">
-                  <div class="modal-header">
-                    <h2 class="modal-title">
-                      {{ selectedNft.name || 'Unnamed NFT' }}
-                    </h2>
-                    <p>Token ID: #{{ selectedNft.tokenId }}</p>
-                  </div>
-
-                  <div class="modal-layout">
-                    <div>
-                      <img
-                        :src="selectedNft.image || 'https://via.placeholder.com/400x400?text=No+Image'"
-                        :alt="selectedNft.name"
-                        class="modal-image"
-                      />
-                    </div>
-
-                    <div>
-                      <!-- 説明 -->
-                      <div
-                        v-if="selectedNft.description"
-                        class="metadata-section"
-                      >
-                        <h3 class="metadata-title">説明</h3>
-                        <p>{{ selectedNft.description }}</p>
-                      </div>
-
-                      <!-- 属性 -->
-                      <div
-                        v-if="selectedNft.attributes && selectedNft.attributes.length > 0"
-                        class="metadata-section"
-                      >
-                        <h3 class="metadata-title">属性</h3>
-                        <div class="metadata-grid">
-                          <div
-                            v-for="(attr, index) in selectedNft.attributes"
-                            :key="index"
-                            class="metadata-item"
-                          >
-                            <span class="metadata-label"
-                              >{{ attr.trait_type }}</span
-                            >
-                            <span class="metadata-value">{{ attr.value }}</span>
-                          </div>
-                        </div>
-                      </div>
-
-                      <!-- コントラクト情報 -->
-                      <div class="metadata-section">
-                        <h3 class="metadata-title">コントラクト情報</h3>
-                        <div class="metadata-grid">
-                          <div class="metadata-item">
-                            <span class="metadata-label">Contract</span>
-                            <span class="metadata-value"
-                              >{{ contractAddress.slice(0, 6) }}...{{
-                              contractAddress.slice(-4) }}</span
-                            >
-                          </div>
-                          <div class="metadata-item">
-                            <span class="metadata-label">Token ID</span>
-                            <span class="metadata-value"
-                              >{{ selectedNft.tokenId }}</span
-                            >
-                          </div>
-                          <div class="metadata-item">
-                            <span class="metadata-label">Token URI</span>
-                            <span class="metadata-value"
-                              >{{ selectedNft.tokenURI || 'N/A' }}</span
-                            >
-                          </div>
-                          <div class="metadata-item">
-                            <span class="metadata-label">Token Standard</span>
-                            <span class="metadata-value"
-                              >{{ tokenStandard }}</span
-                            >
-                          </div>
-                          <div class="metadata-item">
-                            <span class="metadata-label">Network</span>
-                            <span class="metadata-value">Polygon</span>
-                          </div>
-                        </div>
-                      </div>
-
-                      <!-- 外部リンク -->
-                      <div class="metadata-section">
-                        <button
-                          class="btn"
-                          @click="viewOnPolygonScan(selectedNft.tokenId)"
-                        >
-                          PolygonScanで確認
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                </div>
               </div>
             </div>
           </transition>
@@ -662,11 +524,11 @@
       // ERC721 ABI (Web3.js用)
       const ERC721_ABI = [
         {
-          "inputs": [{"name": "tokenId", "type": "uint256"}],
-          "name": "tokenURI",
-          "outputs": [{"name": "", "type": "string"}],
-          "type": "function"
-        }
+          inputs: [{ name: "tokenId", type: "uint256" }],
+          name: "tokenURI",
+          outputs: [{ name: "", type: "string" }],
+          type: "function",
+        },
       ];
 
       // ERC1155 ABI (必要最小限)
@@ -682,7 +544,6 @@
             contractAddress: "",
             tokenId: "",
             nfts: [],
-            selectedNft: null,
             loading: false,
             statusMessage: "",
             statusClass: "",
@@ -690,12 +551,13 @@
             contract: null,
             tokenStandard: "ERC721",
             menuOpen: false,
+            showControlPanel: true,
           };
         },
         mounted() {
           // Web3の初期化
           this.initializeEthers();
-          
+
           // URLパラメータから値を取得
           this.loadFromUrlParams();
 
@@ -705,17 +567,18 @@
 
         methods: {
           initializeEthers() {
-            this.web3 = new Web3('https://polygon-rpc.com');
+            this.web3 = new Web3("https://polygon-rpc.com");
             this.showStatus("接続完了", "success");
           },
-          
+
           loadFromUrlParams() {
             const urlParams = new URLSearchParams(window.location.search);
-            const ca = urlParams.get('ca');
-            const id = urlParams.get('id');
-            
+            const ca = urlParams.get("ca");
+            const id = urlParams.get("id");
+
             if (ca) {
               this.contractAddress = ca;
+              this.showControlPanel = false;
               if (id) {
                 this.tokenId = id;
               }
@@ -728,7 +591,10 @@
 
             this.loading = true;
             try {
-              this.contract = new this.web3.eth.Contract(ERC721_ABI, this.contractAddress);
+              this.contract = new this.web3.eth.Contract(
+                ERC721_ABI,
+                this.contractAddress
+              );
               const nft = await this.fetchTokenMetadata(this.tokenId || 1);
               if (nft) this.nfts = [nft];
               this.showStatus("取得完了", "success");
@@ -741,8 +607,8 @@
           async fetchTokenMetadata(tokenId) {
             try {
               const uri = await this.contract.methods.tokenURI(tokenId).call();
-              console.log('Original URI:', uri);
-              
+              console.log("Original URI:", uri);
+
               const response = await axios.get(
                 uri.replace("ipfs://", "https://ipfs.io/ipfs/")
               );
@@ -759,11 +625,11 @@
                 attributes: metadata.attributes || [],
                 tokenURI: uri,
               };
-              
-              console.log('NFT result:', result);
+
+              console.log("NFT result:", result);
               return result;
             } catch (error) {
-              console.error('fetchTokenMetadata error:', error);
+              console.error("fetchTokenMetadata error:", error);
               return null;
             }
           },
@@ -779,17 +645,7 @@
             this.tokenId = "";
             this.nfts = [];
             this.statusMessage = "";
-            this.selectedNft = null;
-          },
-
-          openModal(nft) {
-            this.selectedNft = nft;
-            document.body.style.overflow = "hidden";
-          },
-
-          closeModal() {
-            this.selectedNft = null;
-            document.body.style.overflow = "";
+            this.showControlPanel = true;
           },
 
           viewOnPolygonScan(tokenId) {
@@ -816,8 +672,8 @@
           },
 
           handleEscape(e) {
-            if (e.key === "Escape" && this.selectedNft) {
-              this.closeModal();
+            if (e.key === "Escape" && this.menuOpen) {
+              this.closeMenu();
             }
           },
 
