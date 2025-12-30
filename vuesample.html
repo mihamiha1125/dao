@@ -1,0 +1,590 @@
+<!DOCTYPE html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>BizenDAO - Vue sammple</title>
+
+    <!-- 既存のCSS -->
+    <link rel="stylesheet" href="css/style.css" />
+    <link rel="stylesheet" href="css/style-item.css" />
+    <link rel="stylesheet" href="css/artist-list.css" />
+
+    <!-- Vue 3 CDN -->
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+
+    <style>
+      /* Vue.js固有の追加スタイル */
+      main {
+        padding-top: 100px;
+      }
+
+      /* フィルター */
+      .filters {
+        display: flex;
+        gap: 20px;
+        justify-content: center;
+        margin-bottom: 40px;
+        flex-wrap: wrap;
+      }
+
+      .filter-group {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+      }
+
+      .filter-group label {
+        font-size: 14px;
+        opacity: 0.8;
+      }
+
+      .filter-group select,
+      .filter-group input {
+        padding: 8px 16px;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        background: rgba(255, 255, 255, 0.05);
+        color: #f6f6f6;
+        border-radius: 4px;
+        font-size: 14px;
+      }
+
+      /* 商品カードの拡張 */
+      .product-card {
+        cursor: pointer;
+        transition: all 0.3s ease;
+      }
+
+      .product-card:hover {
+        transform: translateY(-4px);
+      }
+
+      .product-card img {
+        height: 200px;
+        object-fit: cover;
+      }
+
+      .product-card figcaption {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        padding: 16px;
+      }
+
+      .product-price {
+        font-size: 16px;
+        color: #ffd700;
+        margin-top: 8px;
+      }
+
+      /* モーダル */
+      .modal-overlay {
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.8);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 100;
+        padding: 20px;
+        backdrop-filter: blur(4px);
+      }
+
+      .modal {
+        background: #111318;
+        border-radius: 12px;
+        max-width: 800px;
+        width: 100%;
+        max-height: 90vh;
+        overflow-y: auto;
+        position: relative;
+      }
+
+      .modal-close {
+        position: absolute;
+        top: 16px;
+        right: 16px;
+        background: transparent;
+        border: none;
+        color: #f6f6f6;
+        font-size: 24px;
+        cursor: pointer;
+        width: 32px;
+        height: 32px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+        transition: background 0.3s;
+      }
+
+      .modal-close:hover {
+        background: rgba(255, 255, 255, 0.1);
+      }
+
+      .modal-content {
+        padding: 40px;
+      }
+
+      .modal-layout {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 40px;
+        margin-bottom: 24px;
+      }
+
+      @media (max-width: 768px) {
+        .modal-layout {
+          grid-template-columns: 1fr;
+        }
+      }
+
+      .modal-image {
+        width: 100%;
+        height: auto;
+        border-radius: 8px;
+      }
+
+      .modal-info h2 {
+        font-size: 24px;
+        margin-bottom: 20px;
+        font-family: "Times New Roman", "Hiragino Mincho ProN", serif;
+      }
+
+      .modal-details {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        margin-bottom: 24px;
+      }
+
+      .detail-row {
+        display: flex;
+        justify-content: space-between;
+        padding: 8px 0;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      }
+
+      .detail-label {
+        opacity: 0.7;
+        font-size: 14px;
+      }
+
+      .detail-value {
+        font-weight: 500;
+      }
+
+      .modal-description {
+        line-height: 1.8;
+        opacity: 0.9;
+        grid-column: 1 / -1;
+      }
+
+      /* ローディング */
+      .loading {
+        text-align: center;
+        padding: 80px 20px;
+        font-size: 18px;
+        opacity: 0.7;
+      }
+
+      .no-results {
+        text-align: center;
+        padding: 80px 20px;
+        opacity: 0.7;
+      }
+
+      /* フェードアニメーション */
+      .fade-enter-active,
+      .fade-leave-active {
+        transition: opacity 0.3s ease;
+      }
+
+      .fade-enter-from,
+      .fade-leave-to {
+        opacity: 0;
+      }
+
+      /* カスタムグリッド（既存を上書き） */
+      .vue-product-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        gap: 40px;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="app">
+      <!-- ================= Header ================= -->
+      <header class="site-header">
+        <div class="container header-inner">
+          <a href="#top" class="logo">BizenDAO</a>
+
+          <div class="header-right">
+            <button class="lang-toggle" type="button">EN/JP</button>
+            <button
+              class="nav-toggle"
+              type="button"
+              aria-label="メニューを開閉"
+              @click="toggleMenu"
+            >
+              <span></span><span></span>
+            </button>
+          </div>
+        </div>
+
+        <div
+          class="nav-overlay"
+          :class="{ 'is-open': menuOpen }"
+          @click="closeMenu"
+        ></div>
+        <aside
+          class="nav-drawer"
+          :class="{ 'is-open': menuOpen }"
+          aria-label="サイトメニュー"
+        >
+          <ul class="drawer-nav">
+            <li><a href="./index.html">トップページ</a></li>
+            <!-- <li><a href="./product-list.html">商品一覧</a></li> -->
+            <li><a href="./artist-list.html">作家紹介</a></li>
+            <li><a href="./index.html#company">会社概要</a></li>
+            <li><a href="./index.html#discord">Discordリンク</a></li>
+            <li>
+              <a href="https://meta.bon-soleil.com/" target="_blank">Meta</a>
+            </li>
+            <li><a href="./index.html#donation">寄付</a></li>
+          </ul>
+        </aside>
+      </header>
+
+      <main>
+        <section class="section">
+          <div class="container">
+            <h2 class="section-title section-title--big">備前焼コレクション</h2>
+
+            <!-- フィルター -->
+            <div class="filters">
+              <div class="filter-group">
+                <label>作家で絞り込み</label>
+                <select v-model="selectedArtist">
+                  <option value="">すべての作家</option>
+                  <option
+                    v-for="artist in uniqueArtists"
+                    :key="artist"
+                    :value="artist"
+                  >
+                    {{ artist }}
+                  </option>
+                </select>
+              </div>
+
+              <div class="filter-group">
+                <label>カテゴリー</label>
+                <select v-model="selectedCategory">
+                  <option value="">すべて</option>
+                  <option value="茶器">茶器</option>
+                  <option value="花器">花器</option>
+                  <option value="酒器">酒器</option>
+                  <option value="皿">皿</option>
+                </select>
+              </div>
+
+              <div class="filter-group">
+                <label>価格順</label>
+                <select v-model="sortBy">
+                  <option value="">デフォルト</option>
+                  <option value="price-asc">価格：安い順</option>
+                  <option value="price-desc">価格：高い順</option>
+                </select>
+              </div>
+
+              <div class="filter-group">
+                <label>検索</label>
+                <input
+                  type="text"
+                  v-model="searchQuery"
+                  placeholder="作品名で検索..."
+                />
+              </div>
+            </div>
+
+            <!-- ローディング -->
+            <div v-if="loading" class="loading">読み込み中...</div>
+
+            <!-- 商品グリッド -->
+            <div
+              v-else-if="filteredProducts.length > 0"
+              class="vue-product-grid"
+            >
+              <figure
+                v-for="product in filteredProducts"
+                :key="product.id"
+                class="product-card"
+                @click="openModal(product)"
+              >
+                <img :src="product.image" :alt="product.title" />
+                <figcaption>
+                  <span class="product-author">{{ product.artist }}</span>
+                  <span class="product-title">{{ product.title }}</span>
+                  <span class="product-price"
+                    >¥{{ product.price.toLocaleString() }}</span
+                  >
+                </figcaption>
+              </figure>
+            </div>
+
+            <!-- 結果なし -->
+            <div v-else class="no-results">
+              該当する作品が見つかりませんでした。
+            </div>
+
+            <!-- モーダル -->
+            <transition name="fade">
+              <div
+                v-if="selectedProduct"
+                class="modal-overlay"
+                @click="closeModal"
+              >
+                <div class="modal" @click.stop>
+                  <button class="modal-close" @click="closeModal">×</button>
+                  <div class="modal-content">
+                    <div class="modal-layout">
+                      <div>
+                        <img
+                          :src="selectedProduct.image"
+                          :alt="selectedProduct.title"
+                          class="modal-image"
+                        />
+                      </div>
+                      <div class="modal-info">
+                        <h2>{{ selectedProduct.title }}</h2>
+
+                        <div class="modal-details">
+                          <div class="detail-row">
+                            <span class="detail-label">作家</span>
+                            <span class="detail-value"
+                              >{{ selectedProduct.artist }}</span
+                            >
+                          </div>
+                          <div class="detail-row">
+                            <span class="detail-label">カテゴリー</span>
+                            <span class="detail-value"
+                              >{{ selectedProduct.category }}</span
+                            >
+                          </div>
+                          <div class="detail-row">
+                            <span class="detail-label">サイズ</span>
+                            <span class="detail-value"
+                              >{{ selectedProduct.size }}</span
+                            >
+                          </div>
+                          <div class="detail-row">
+                            <span class="detail-label">制作年</span>
+                            <span class="detail-value"
+                              >{{ selectedProduct.year }}</span
+                            >
+                          </div>
+                          <div class="detail-row">
+                            <span class="detail-label">価格</span>
+                            <span class="detail-value"
+                              >¥{{ selectedProduct.price.toLocaleString()
+                              }}</span
+                            >
+                          </div>
+                          <div class="detail-row" v-if="selectedProduct.nft">
+                            <span class="detail-label">NFT</span>
+                            <span class="detail-value">発行済み</span>
+                          </div>
+                        </div>
+
+                        <button class="outline-btn" style="margin-top: 20px">
+                          購入する
+                        </button>
+                      </div>
+
+                      <p class="modal-description">
+                        {{ selectedProduct.description }}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </transition>
+          </div>
+        </section>
+      </main>
+
+      <!-- ================= Footer ================= -->
+      <footer class="site-footer">
+        <div class="container footer-inner">
+          <nav class="footer-nav">
+            <ul>
+              <li><a href="./index.html">トップページ</a></li>
+              <!-- <li><a href="./product-list.html">商品一覧</a></li> -->
+              <li><a href="./artist-list.html">作家紹介</a></li>
+              <li><a href="#company">会社概要</a></li>
+              <li>
+                <a href="https://discord.gg/Fb3M7HHxs2" target="_blank"
+                  >Discordリンク</a
+                >
+              </li>
+              <li>
+                <a href="https://meta.bon-soleil.com/" target="_blank">Meta</a>
+              </li>
+              <li><a href="#donation">寄付</a></li>
+            </ul>
+          </nav>
+          <div class="footer-logo">BizenDAO</div>
+        </div>
+      </footer>
+    </div>
+
+    <script>
+      const { createApp } = Vue;
+
+      createApp({
+        data() {
+          return {
+            loading: true,
+            products: [],
+            selectedArtist: "",
+            selectedCategory: "",
+            sortBy: "",
+            searchQuery: "",
+            selectedProduct: null,
+            menuOpen: false,
+          };
+        },
+        computed: {
+          // 作家リストを取得（重複なし）
+          uniqueArtists() {
+            const artists = this.products.map((p) => p.artist);
+            return [...new Set(artists)].sort();
+          },
+
+          // フィルタリング・ソート済み商品リスト
+          filteredProducts() {
+            let result = [...this.products];
+
+            // 作家でフィルタ
+            if (this.selectedArtist) {
+              result = result.filter((p) => p.artist === this.selectedArtist);
+            }
+
+            // カテゴリーでフィルタ
+            if (this.selectedCategory) {
+              result = result.filter(
+                (p) => p.category === this.selectedCategory
+              );
+            }
+
+            // 検索クエリでフィルタ
+            if (this.searchQuery) {
+              const query = this.searchQuery.toLowerCase();
+              result = result.filter(
+                (p) =>
+                  p.title.toLowerCase().includes(query) ||
+                  p.description.toLowerCase().includes(query)
+              );
+            }
+
+            // ソート
+            if (this.sortBy === "price-asc") {
+              result.sort((a, b) => a.price - b.price);
+            } else if (this.sortBy === "price-desc") {
+              result.sort((a, b) => b.price - a.price);
+            }
+
+            return result;
+          },
+        },
+        methods: {
+          // サンプルデータを生成
+          generateSampleData() {
+            const artists = [
+              "森 敏彰",
+              "森 大雅",
+              "藤田 祥",
+              "山田 太郎",
+              "佐藤 花子",
+            ];
+            const categories = ["茶器", "花器", "酒器", "皿"];
+            const titles = [
+              "窯変茶碗",
+              "緋襷花入",
+              "胡麻徳利",
+              "青備前皿",
+              "桟切水指",
+            ];
+
+            const products = [];
+            for (let i = 1; i <= 15; i++) {
+              products.push({
+                id: i,
+                title:
+                  titles[Math.floor(Math.random() * titles.length)] + " #" + i,
+                artist: artists[Math.floor(Math.random() * artists.length)],
+                category:
+                  categories[Math.floor(Math.random() * categories.length)],
+                price: Math.floor(Math.random() * 200000) + 50000,
+                image: `img/IMG_${3474 + (i % 15)}.jpg`,
+                size: `${Math.floor(Math.random() * 20) + 10}cm × ${
+                  Math.floor(Math.random() * 20) + 10
+                }cm`,
+                year: 2020 + Math.floor(Math.random() * 4),
+                nft: Math.random() > 0.5,
+                description:
+                  "備前焼は釉薬を使わず、土と炎の出会いから生まれる自然の芸術です。この作品は、伝統的な技法を用いながらも現代的な感性を加えて制作されました。",
+              });
+            }
+            return products;
+          },
+
+          // モーダルを開く
+          openModal(product) {
+            this.selectedProduct = product;
+            document.body.style.overflow = "hidden";
+          },
+
+          // モーダルを閉じる
+          closeModal() {
+            this.selectedProduct = null;
+            document.body.style.overflow = "";
+          },
+
+          // ESCキーでモーダルを閉じる
+          handleEscape(e) {
+            if (e.key === "Escape" && this.selectedProduct) {
+              this.closeModal();
+            }
+          },
+
+          // ハンバーガーメニューを開く/閉じる
+          toggleMenu() {
+            this.menuOpen = !this.menuOpen;
+            document.body.style.overflow = this.menuOpen ? "hidden" : "";
+          },
+
+          // メニューを閉じる
+          closeMenu() {
+            this.menuOpen = false;
+            document.body.style.overflow = "";
+          },
+        },
+        mounted() {
+          // サンプルデータをロード
+          setTimeout(() => {
+            this.products = this.generateSampleData();
+            this.loading = false;
+          }, 1000);
+
+          // ESCキーイベントリスナー
+          window.addEventListener("keydown", this.handleEscape);
+        },
+        unmounted() {
+          window.removeEventListener("keydown", this.handleEscape);
+        },
+      }).mount("#app");
+    </script>
+  </body>
+</html>

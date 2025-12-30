@@ -1,0 +1,583 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BizenDAO - Contract Token List</title>
+    
+    <!-- 既存のCSS -->
+    <link rel="stylesheet" href="css/style.css">
+    
+    <!-- Web3.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/web3@1.10.0/dist/web3.min.js" crossorigin="anonymous"></script>
+    
+    <!-- Vue 3 CDN -->
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js" crossorigin="anonymous"></script>
+    
+    <style>
+        /* Contract Viewer固有のスタイル */
+        main {
+            padding-top: 100px;
+            min-height: 100vh;
+        }
+        
+        .contract-viewer {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+        
+        .viewer-title {
+            text-align: center;
+            font-size: 36px;
+            margin-bottom: 20px;
+            font-family: "Times New Roman", "Hiragino Mincho ProN", serif;
+            letter-spacing: 0.1em;
+        }
+        
+        .viewer-subtitle {
+            text-align: center;
+            font-size: 16px;
+            opacity: 0.8;
+            margin-bottom: 40px;
+        }
+        
+        /* コントロールパネル */
+        .control-panel {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 30px;
+            margin-bottom: 40px;
+        }
+        
+        .input-field {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin-bottom: 20px;
+        }
+        
+        .input-field label {
+            font-size: 14px;
+            opacity: 0.8;
+        }
+        
+        .input-field input {
+            padding: 12px 16px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            background: rgba(255, 255, 255, 0.05);
+            color: #f6f6f6;
+            border-radius: 8px;
+            font-size: 14px;
+            font-family: monospace;
+        }
+        
+        .input-field input:focus {
+            outline: none;
+            border-color: rgba(255, 255, 255, 0.4);
+            background: rgba(255, 255, 255, 0.08);
+        }
+        
+        .action-buttons {
+            display: flex;
+            gap: 16px;
+            margin-top: 20px;
+        }
+        
+        .btn {
+            padding: 12px 24px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            background: transparent;
+            color: #f6f6f6;
+            border-radius: 8px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .btn:hover {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: rgba(255, 255, 255, 0.5);
+        }
+        
+        .btn-primary {
+            background: rgba(255, 255, 255, 0.1);
+        }
+        
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        /* ステータス表示 */
+        .status-message {
+            padding: 12px 16px;
+            border-radius: 8px;
+            margin-top: 20px;
+            font-size: 14px;
+        }
+        
+        .status-info {
+            background: rgba(0, 100, 255, 0.1);
+            border: 1px solid rgba(0, 100, 255, 0.3);
+            color: #6bb6ff;
+        }
+        
+        .status-success {
+            background: rgba(0, 255, 100, 0.1);
+            border: 1px solid rgba(0, 255, 100, 0.3);
+            color: #66ff99;
+        }
+        
+        .status-error {
+            background: rgba(255, 0, 0, 0.1);
+            border: 1px solid rgba(255, 0, 0, 0.3);
+            color: #ff6666;
+        }
+        
+        /* コントラクト情報 */
+        .contract-info {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 30px;
+            margin-bottom: 40px;
+        }
+        
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+        }
+        
+        .info-item {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        
+        .info-label {
+            font-size: 14px;
+            opacity: 0.7;
+        }
+        
+        .info-value {
+            font-size: 16px;
+            font-weight: 500;
+        }
+        
+        /* トークンリスト */
+        .token-list {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 30px;
+        }
+        
+        .list-title {
+            font-size: 20px;
+            margin-bottom: 20px;
+            opacity: 0.9;
+        }
+        
+        .token-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+            gap: 12px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        
+        .token-item {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 8px;
+            padding: 12px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            color: #f6f6f6;
+        }
+        
+        .token-item:hover {
+            background: rgba(255, 255, 255, 0.2);
+            border-color: rgba(255, 255, 255, 0.4);
+            transform: translateY(-2px);
+            color: #f6f6f6;
+        }
+        
+        /* ローディング */
+        .loading-spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: #fff;
+            animation: spin 1s ease-in-out infinite;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        .loading-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.8);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+        
+        .loading-content {
+            text-align: center;
+        }
+        
+        .loading-content .loading-spinner {
+            width: 40px;
+            height: 40px;
+            margin-bottom: 20px;
+        }
+        
+        /* ネットワーク表示 */
+        .network-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 16px;
+            background: rgba(138, 43, 226, 0.1);
+            border: 1px solid rgba(138, 43, 226, 0.3);
+            border-radius: 20px;
+            font-size: 14px;
+            margin-bottom: 20px;
+        }
+        
+        .network-dot {
+            width: 8px;
+            height: 8px;
+            background: #8a2be2;
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+    </style>
+</head>
+<body>
+    <div id="app">
+        <!-- ヘッダー -->
+        <header class="site-header">
+            <div class="container header-inner">
+                <a href="index.html" class="logo">BizenDAO</a>
+                
+                <div class="header-right">
+                    <button class="lang-toggle" type="button">EN/JP</button>
+                    <button class="nav-toggle" type="button" aria-label="メニューを開閉" @click="toggleMenu">
+                        <span></span><span></span>
+                    </button>
+                </div>
+            </div>
+            
+            <div class="nav-overlay" :class="{ 'is-open': menuOpen }" @click="closeMenu"></div>
+            <aside class="nav-drawer" :class="{ 'is-open': menuOpen }" aria-label="サイトメニュー">
+                <ul class="drawer-nav">
+                    <li><a href="./index.html">トップページ</a></li>
+                    <li><a href="./artist-list.html">作家紹介</a></li>
+                    <li><a href="./index.html#company">会社概要</a></li>
+                    <li><a href="./index.html#discord">Discordリンク</a></li>
+                    <li><a href="https://meta.bon-soleil.com/" target="_blank">Meta</a></li>
+                    <li><a href="./index.html#donation">寄付</a></li>
+                </ul>
+            </aside>
+        </header>
+        
+        <main>
+            <div class="contract-viewer">
+                <h1 class="viewer-title">Contract Token List</h1>
+                <p class="viewer-subtitle">Enumerable対応NFTコントラクトのトークン一覧</p>
+                
+                <!-- ネットワーク表示 -->
+                <div class="network-badge">
+                    <span class="network-dot"></span>
+                    <span>Polygon Mainnet</span>
+                </div>
+                
+                <!-- コントロールパネル -->
+                <div class="control-panel">
+                    <div class="input-field">
+                        <label>NFTコントラクトアドレス</label>
+                        <input 
+                            type="text" 
+                            v-model="contractAddress" 
+                            placeholder="0x..."
+                            @keyup.enter="loadContract"
+                        >
+                    </div>
+                    
+                    <div class="action-buttons">
+                        <button class="btn btn-primary" @click="loadContract" :disabled="loading || !contractAddress">
+                            <span v-if="loading" class="loading-spinner"></span>
+                            <span v-else>トークン一覧を取得</span>
+                        </button>
+                        <button class="btn" @click="loadSampleContract">
+                            サンプルコントラクト
+                        </button>
+                        <button class="btn" @click="clearData">
+                            クリア
+                        </button>
+                    </div>
+                    
+                    <!-- ステータスメッセージ -->
+                    <div v-if="statusMessage" :class="['status-message', statusClass]">
+                        {{ statusMessage }}
+                    </div>
+                </div>
+                
+                <!-- コントラクト情報 -->
+                <div v-if="contractInfo.name" class="contract-info">
+                    <h3 class="list-title">コントラクト情報</h3>
+                    <div class="info-grid">
+                        <div class="info-item">
+                            <span class="info-label">名前</span>
+                            <span class="info-value">{{ contractInfo.name }}</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">シンボル</span>
+                            <span class="info-value">{{ contractInfo.symbol }}</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">総発行数</span>
+                            <span class="info-value">{{ contractInfo.totalSupply }}</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">コントラクト</span>
+                            <span class="info-value">{{ contractAddress.slice(0, 6) }}...{{ contractAddress.slice(-4) }}</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- トークンリスト -->
+                <div v-if="tokens.length > 0" class="token-list">
+                    <h3 class="list-title">トークンID一覧 ({{ tokens.length }}件)</h3>
+                    <div class="token-grid">
+                        <a 
+                            v-for="tokenId in tokens" 
+                            :key="tokenId"
+                            :href="`token.html?ca=${contractAddress}&id=${tokenId}`"
+                            class="token-item"
+                            target="_blank"
+                        >
+                            #{{ tokenId }}
+                        </a>
+                    </div>
+                </div>
+                
+                <!-- ローディングオーバーレイ -->
+                <div v-if="loading" class="loading-overlay">
+                    <div class="loading-content">
+                        <div class="loading-spinner"></div>
+                        <p>トークン一覧を読み込み中...</p>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        const { createApp } = Vue;
+        
+        // ERC721Enumerable ABI
+        const ERC721_ENUMERABLE_ABI = [
+            {
+                "inputs": [],
+                "name": "name",
+                "outputs": [{"name": "", "type": "string"}],
+                "type": "function"
+            },
+            {
+                "inputs": [],
+                "name": "symbol", 
+                "outputs": [{"name": "", "type": "string"}],
+                "type": "function"
+            },
+            {
+                "inputs": [],
+                "name": "totalSupply",
+                "outputs": [{"name": "", "type": "uint256"}],
+                "type": "function"
+            },
+            {
+                "inputs": [{"name": "index", "type": "uint256"}],
+                "name": "tokenByIndex",
+                "outputs": [{"name": "", "type": "uint256"}],
+                "type": "function"
+            }
+        ];
+
+        createApp({
+            data() {
+                return {
+                    contractAddress: '',
+                    tokens: [],
+                    contractInfo: {},
+                    loading: false,
+                    statusMessage: '',
+                    statusClass: '',
+                    web3: null,
+                    contract: null,
+                    menuOpen: false
+                }
+            },
+            mounted() {
+                this.initializeWeb3();
+                this.loadFromUrlParams();
+                window.addEventListener('keydown', this.handleEscape);
+            },
+            
+            methods: {
+                initializeWeb3() {
+                    this.web3 = new Web3('https://polygon-rpc.com');
+                    this.showStatus('接続完了', 'success');
+                },
+                
+                loadFromUrlParams() {
+                    const urlParams = new URLSearchParams(window.location.search);
+                    const ca = urlParams.get('ca');
+                    
+                    if (ca) {
+                        this.contractAddress = ca;
+                        this.loadContract();
+                    }
+                },
+                
+                async loadContract() {
+                    if (!this.contractAddress) return;
+                    
+                    this.loading = true;
+                    this.tokens = [];
+                    this.contractInfo = {};
+                    this.showStatus('コントラクト情報を取得中...', 'info');
+                    
+                    try {
+                        this.contract = new this.web3.eth.Contract(ERC721_ENUMERABLE_ABI, this.contractAddress);
+                        
+                        // コントラクト基本情報を取得
+                        await this.fetchContractInfo();
+                        
+                        // トークン一覧を取得
+                        await this.fetchTokenList();
+                        
+                        this.showStatus(`${this.tokens.length}件のトークンを取得しました`, 'success');
+                    } catch (error) {
+                        console.error('Error loading contract:', error);
+                        this.showStatus(`エラー: ${error.message}`, 'error');
+                    }
+                    this.loading = false;
+                },
+                
+                async fetchContractInfo() {
+                    try {
+                        const [name, symbol, totalSupply] = await Promise.all([
+                            this.contract.methods.name().call(),
+                            this.contract.methods.symbol().call(),
+                            this.contract.methods.totalSupply().call()
+                        ]);
+                        
+                        this.contractInfo = {
+                            name,
+                            symbol,
+                            totalSupply
+                        };
+                    } catch (error) {
+                        console.error('Error fetching contract info:', error);
+                        this.contractInfo = {
+                            name: 'Unknown',
+                            symbol: 'Unknown',
+                            totalSupply: '0'
+                        };
+                    }
+                },
+                
+                async fetchTokenList() {
+                    try {
+                        const totalSupply = parseInt(this.contractInfo.totalSupply);
+                        const tokens = [];
+                        
+                        // バッチサイズを小さくして並列処理
+                        const batchSize = 50;
+                        for (let i = 0; i < totalSupply; i += batchSize) {
+                            const batch = [];
+                            for (let j = i; j < Math.min(i + batchSize, totalSupply); j++) {
+                                batch.push(this.contract.methods.tokenByIndex(j).call());
+                            }
+                            
+                            const batchResults = await Promise.allSettled(batch);
+                            batchResults.forEach(result => {
+                                if (result.status === 'fulfilled') {
+                                    tokens.push(result.value);
+                                }
+                            });
+                            
+                            // 進捗表示
+                            this.showStatus(`トークン取得中... ${Math.min(i + batchSize, totalSupply)}/${totalSupply}`, 'info');
+                        }
+                        
+                        this.tokens = tokens.sort((a, b) => parseInt(a) - parseInt(b));
+                    } catch (error) {
+                        console.error('Error fetching token list:', error);
+                        throw new Error('トークン一覧の取得に失敗しました');
+                    }
+                },
+                
+                loadSampleContract() {
+                    this.contractAddress = '0x72A02d559435319bD77462690E202a28c2Ba8623';
+                    this.loadContract();
+                },
+                
+                clearData() {
+                    this.contractAddress = '';
+                    this.tokens = [];
+                    this.contractInfo = {};
+                    this.statusMessage = '';
+                },
+                
+                showStatus(message, type) {
+                    this.statusMessage = message;
+                    this.statusClass = `status-${type}`;
+                    
+                    if (type !== 'info') {
+                        setTimeout(() => {
+                            if (this.statusMessage === message) {
+                                this.statusMessage = '';
+                            }
+                        }, 5000);
+                    }
+                },
+                
+                handleEscape(e) {
+                    if (e.key === 'Escape' && this.menuOpen) {
+                        this.closeMenu();
+                    }
+                },
+                
+                toggleMenu() {
+                    this.menuOpen = !this.menuOpen;
+                    document.body.style.overflow = this.menuOpen ? 'hidden' : '';
+                },
+                
+                closeMenu() {
+                    this.menuOpen = false;
+                    document.body.style.overflow = '';
+                }
+            }
+        }).mount('#app');
+    </script>
+</body>
+</html>
