@@ -1,131 +1,135 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="ja">
-
-<head>
+  <head>
     <meta charset="utf-8" />
     <title>BizenDAO｜作家紹介</title>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <!-- 共通 style.css を読み込んだ上で、ページ専用CSSを上書き -->
     <link rel="stylesheet" href="./css/artist-list.css" />
-</head>
+  </head>
 
-<body>
+  <body>
     <header class="site-header">
-        <div class="container header-inner">
-            <a href="index.html#top" class="logo">BizenDAO</a>
+      <div class="container header-inner">
+        <a href="index.html#top" class="logo">BizenDAO</a>
 
-            <div class="header-right">
-                <button class="lang-toggle" type="button">EN/JP</button>
-                <button class="nav-toggle" type="button" aria-label="メニューを開閉" aria-expanded="false">
-                    <span></span><span></span>
-                </button>
-            </div>
+        <div class="header-right">
+          <button class="lang-toggle" type="button">EN/JP</button>
+          <button
+            class="nav-toggle"
+            type="button"
+            aria-label="メニューを開閉"
+            aria-expanded="false"
+          >
+            <span></span><span></span>
+          </button>
         </div>
+      </div>
     </header>
 
     <!-- Drawer（※必須：headerの外でOK） -->
     <div class="nav-overlay"></div>
     <aside class="nav-drawer" aria-label="サイトメニュー">
-        <ul class="drawer-nav">
-            <li><a href="./index.html">トップページ</a></li>
-            <!-- <li><a href="./product-list.html">商品一覧</a></li> -->
-            <li><a href="artist-list.html">作家紹介</a></li>
-            <li><a href="./index.html#company">会社概要</a></li>
-            <li><a href="./index.html#discord">Discordリンク</a></li>
-            <li><a href="https://bizen.sbs/meta">Meta</a></li>
-            <li><a href="./index.html#donation">寄付</a></li>
-        </ul>
+      <ul class="drawer-nav">
+        <li><a href="./index.html">トップページ</a></li>
+        <!-- <li><a href="./product-list.html">商品一覧</a></li> -->
+        <li><a href="artist-list.html">作家紹介</a></li>
+        <li><a href="./index.html#company">会社概要</a></li>
+        <li><a href="./index.html#discord">Discordリンク</a></li>
+        <li><a href="https://meta.bon-soleil.com/" target="_blank">Meta</a></li>
+        <li><a href="./index.html#donation">寄付</a></li>
+      </ul>
     </aside>
-
 
     <!-- ================= Main ================= -->
     <main class="alist-main">
-        <div class="alist-inner">
+      <div class="alist-inner">
+        <section class="alist-hero">
+          <h1 class="alist-title">作家紹介</h1>
+          <p class="alist-sub">
+            BizenDAOに参加する作家と、その背景にある物語。
+          </p>
+        </section>
 
-            <section class="alist-hero">
-                <h1 class="alist-title">作家紹介</h1>
-                <p class="alist-sub">BizenDAOに参加する作家と、その背景にある物語。</p>
-            </section>
+        <section class="alist-grid" aria-label="作家一覧">
+          <!-- 森 敏彰 -->
+          <article class="alist-card">
+            <a class="alist-link" href="./creators/artist-mori-toshiaki.html">
+              <figure class="alist-figure">
+                <img src="./img/gallary1.jpg" alt="森 敏彰" />
+              </figure>
 
-            <section class="alist-grid" aria-label="作家一覧">
-                <!-- 森 敏彰 -->
-                <article class="alist-card">
-                    <a class="alist-link" href="./作家さん/artist-mori-toshiaki.html">
-                        <figure class="alist-figure">
-                            <img src="./img/ギャラリー①.jpeg" alt="森 敏彰" />
-                        </figure>
+              <div class="alist-meta">
+                <h2 class="alist-name">森 敏彰</h2>
+                <p class="alist-desc">
+                  備前焼窯元六姓の家系を継ぐ森家19代目。文化としての備前焼を世界へ。
+                </p>
 
-                        <div class="alist-meta">
-                            <h2 class="alist-name">森 敏彰</h2>
-                            <p class="alist-desc">
-                                備前焼窯元六姓の家系を継ぐ森家19代目。文化としての備前焼を世界へ。
-                            </p>
+                <span class="alist-cta">プロフィールを見る</span>
+              </div>
+            </a>
+          </article>
 
-                            <span class="alist-cta">プロフィールを見る</span>
-                        </div>
-                    </a>
-                </article>
+          <!-- 森 大雅 -->
+          <article class="alist-card">
+            <a class="alist-link" href="./creators/artist-mori-taiga.html">
+              <figure class="alist-figure">
+                <img src="./img/gallary2.jpg" alt="森 大雅" />
+              </figure>
 
-                <!-- 森 大雅 -->
-                <article class="alist-card">
-                    <a class="alist-link" href="./作家さん/artist-mori-taiga.html">
-                        <figure class="alist-figure">
-                            <img src="./img/ギャラリー②.jpg" alt="森 大雅" />
-                        </figure>
+              <div class="alist-meta">
+                <h2 class="alist-name">森 大雅</h2>
+                <p class="alist-desc">
+                  造形の躍動感と手触り。シリーズや制作背景、作品の世界観を紹介します。
+                </p>
 
-                        <div class="alist-meta">
-                            <h2 class="alist-name">森 大雅</h2>
-                            <p class="alist-desc">
-                                造形の躍動感と手触り。シリーズや制作背景、作品の世界観を紹介します。
-                            </p>
+                <span class="alist-cta">プロフィールを見る</span>
+              </div>
+            </a>
+          </article>
 
-                            <span class="alist-cta">プロフィールを見る</span>
-                        </div>
-                    </a>
-                </article>
+          <!-- 藤田 祥 -->
+          <article class="alist-card">
+            <a class="alist-link" href="./creators/artist-fujita-syo.html">
+              <figure class="alist-figure">
+                <img src="./img/IMG_3501.jpg" alt="藤田 祥" />
+              </figure>
 
-                <!-- 藤田 祥 -->
-                <article class="alist-card">
-                    <a class="alist-link" href="./作家さん/artist-fujita-syo.html">
-                        <figure class="alist-figure">
-                            <img src="./img/IMG_3501.JPG" alt="藤田 祥" />
-                        </figure>
+              <div class="alist-meta">
+                <h2 class="alist-name">藤田 祥</h2>
+                <p class="alist-desc">
+                  炎と土の揺らぎ。制作・展示・思想、そして作品へ繋がる線を辿ります。
+                </p>
 
-                        <div class="alist-meta">
-                            <h2 class="alist-name">藤田 祥</h2>
-                            <p class="alist-desc">
-                                炎と土の揺らぎ。制作・展示・思想、そして作品へ繋がる線を辿ります。
-                            </p>
-
-                            <span class="alist-cta">プロフィールを見る</span>
-                        </div>
-                    </a>
-                </article>
-            </section>
-
-        </div>
+                <span class="alist-cta">プロフィールを見る</span>
+              </div>
+            </a>
+          </article>
+        </section>
+      </div>
     </main>
 
     <!-- ================= Footer（TOPと同じ想定） ================= -->
     <footer class="site-footer">
-        <div class="container footer-inner">
-            <nav class="footer-nav">
-                <ul>
-                    <li><a href="/index.html">トップページ</a></li>
-                    <!-- <li><a href="./product-list.html">商品一覧</a></li> -->
-                    <li><a href="/artist-list.html">作家紹介</a></li>
-                    <li><a href="./index.html#company">会社概要</a></li>
-                    <li><a href=".index.html#discord">Discordリンク</a></li>
-                    <li><a href="https://bizen.sbs/meta">Meta</a></li>
-                    <li><a href=".index.html#donation">寄付</a></li>
-                </ul>
-            </nav>
-            <div class="footer-logo">BizenDAO</div>
-        </div>
+      <div class="container footer-inner">
+        <nav class="footer-nav">
+          <ul>
+            <li><a href="./index.html">トップページ</a></li>
+            <!-- <li><a href="./product-list.html">商品一覧</a></li> -->
+            <li><a href="./artist-list.html">作家紹介</a></li>
+            <li><a href="./index.html#company">会社概要</a></li>
+            <li><a href="./index.html#discord">Discordリンク</a></li>
+            <li>
+              <a href="https://meta.bon-soleil.com/" target="_blank">Meta</a>
+            </li>
+            <li><a href="./index.html#donation">寄付</a></li>
+          </ul>
+        </nav>
+        <div class="footer-logo">BizenDAO</div>
+      </div>
     </footer>
 
     <!-- ※ ハンバーガー（共通）用：あなたのTOPで動いているJSに合わせてください -->
     <script src="js/app.js"></script>
-</body>
-
+  </body>
 </html>

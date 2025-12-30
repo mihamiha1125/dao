@@ -1,139 +1,136 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="ja">
-
-<head>
-    <meta charset="utf-8">
+  <head>
+    <meta charset="utf-8" />
     <title>BizenDAO｜Meta</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link rel="stylesheet" href="css/style.css">
-</head>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="stylesheet" href="css/style.css" />
+  </head>
 
-<body>
-
+  <body>
     <header class="site-header">
-        <div class="container header-inner">
-            <a href="/index.html" class="logo">BizenDAO</a>
+      <div class="container header-inner">
+        <a href="/index.html" class="logo">BizenDAO</a>
 
-            <div class="header-right">
-                <button class="lang-toggle" type="button">EN/JP</button>
-                <button class="nav-toggle" type="button" aria-label="メニューを開閉">
-                    <span></span><span></span>
-                </button>
-            </div>
+        <div class="header-right">
+          <button class="lang-toggle" type="button">EN/JP</button>
+          <button class="nav-toggle" type="button" aria-label="メニューを開閉">
+            <span></span><span></span>
+          </button>
         </div>
+      </div>
 
-        <div class="nav-overlay"></div>
-        <aside class="nav-drawer" aria-label="サイトメニュー">
-            <ul class="drawer-nav">
-                <li><a href="./index.html">トップページ</a></li>
-                <li><a href="/product-list.html">商品一覧</a></li>
-                <li><a href="/artist-list.html">作家紹介</a></li>
-                <li><a href="index.html#company">会社概要</a></li>
-                <li><a href="index.html#discord">Discordリンク</a></li>
-                <li><a href="index.html#meta">Meta</a></li>
-                <li><a href="index.html#donation">寄付</a></li>
-            </ul>
-        </aside>
+      <div class="nav-overlay"></div>
+      <aside class="nav-drawer" aria-label="サイトメニュー">
+        <ul class="drawer-nav">
+          <li><a href="./index.html">トップページ</a></li>
+          <li><a href="/product-list.html">商品一覧</a></li>
+          <li><a href="/artist-list.html">作家紹介</a></li>
+          <li><a href="index.html#company">会社概要</a></li>
+          <li><a href="index.html#discord">Discordリンク</a></li>
+          <li><a href="index.html#meta">Meta</a></li>
+          <li><a href="index.html#donation">寄付</a></li>
+        </ul>
+      </aside>
     </header>
 
     <main class="meta-page">
+      <section class="meta-hero">
+        <h1>Meta</h1>
+        <p>
+          タイトルや概要、画像・3Dデータ・PDFなどを入力し、<br />
+          JSON形式でダウンロード・共有することができます。
+        </p>
+      </section>
 
-        <section class="meta-hero">
-            <h1>Meta</h1>
-            <p>
-                タイトルや概要、画像・3Dデータ・PDFなどを入力し、<br>
-                JSON形式でダウンロード・共有することができます。
-            </p>
-        </section>
-
-        <section class="meta-form-wrap">
-            <div class="meta-form-box">
-
-                <!-- 1行目 -->
-                <div class="meta-row meta-row--top">
-                    <div class="meta-col">
-                        <label>作品タイトル</label>
-                        <input type="text">
-                    </div>
-                    <div class="meta-actions">
-                        <button>JSON生成</button>
-                        <button>JSONダウンロード</button>
-                    </div>
-                </div>
-
-                <!-- 商品説明 -->
-                <div class="meta-row">
-                    <div class="meta-col">
-                        <label>商品説明</label>
-                        <textarea></textarea>
-                    </div>
-                    <div class="meta-actions">
-                        <button>JSONサンプル</button>
-                        <button>ArDrive</button>
-                    </div>
-                </div>
-
-                <!-- URL -->
-                <div class="meta-row">
-                    <label>URL</label>
-                    <input type="text" placeholder="画像URL (jpeg or png)">
-                    <input type="text" placeholder="3D URL (.glb)">
-                    <input type="text" placeholder="PDF URL">
-                </div>
-
-                <!-- 属性 -->
-                <div class="meta-row meta-row--grid">
-                    <div>
-                        <label>カラー</label>
-                        <input type="text">
-                    </div>
-                    <div>
-                        <label>種類</label>
-                        <input type="text">
-                    </div>
-                    <div>
-                        <label>サイズ</label>
-                        <div class="meta-size">
-                            <input placeholder="H">
-                            <input placeholder="W">
-                            <input placeholder="D">
-                        </div>
-                    </div>
-                </div>
-
-                <!-- 追加情報 -->
-                <div class="meta-row">
-                    <label>追加情報</label>
-                    <div class="meta-extra">
-                        <input placeholder="小見出し">
-                        <button>セット</button>
-                    </div>
-                    <textarea></textarea>
-                </div>
-
+      <section class="meta-form-wrap">
+        <div class="meta-form-box">
+          <!-- 1行目 -->
+          <div class="meta-row meta-row--top">
+            <div class="meta-col">
+              <label>作品タイトル</label>
+              <input type="text" />
             </div>
-        </section>
+            <div class="meta-actions">
+              <button>JSON生成</button>
+              <button>JSONダウンロード</button>
+            </div>
+          </div>
 
+          <!-- 商品説明 -->
+          <div class="meta-row">
+            <div class="meta-col">
+              <label>商品説明</label>
+              <textarea></textarea>
+            </div>
+            <div class="meta-actions">
+              <button>JSONサンプル</button>
+              <button>ArDrive</button>
+            </div>
+          </div>
+
+          <!-- URL -->
+          <div class="meta-row">
+            <label>URL</label>
+            <input type="text" placeholder="画像URL (jpeg or png)" />
+            <input type="text" placeholder="3D URL (.glb)" />
+            <input type="text" placeholder="PDF URL" />
+          </div>
+
+          <!-- 属性 -->
+          <div class="meta-row meta-row--grid">
+            <div>
+              <label>カラー</label>
+              <input type="text" />
+            </div>
+            <div>
+              <label>種類</label>
+              <input type="text" />
+            </div>
+            <div>
+              <label>サイズ</label>
+              <div class="meta-size">
+                <input placeholder="H" />
+                <input placeholder="W" />
+                <input placeholder="D" />
+              </div>
+            </div>
+          </div>
+
+          <!-- 追加情報 -->
+          <div class="meta-row">
+            <label>追加情報</label>
+            <div class="meta-extra">
+              <input placeholder="小見出し" />
+              <button>セット</button>
+            </div>
+            <textarea></textarea>
+          </div>
+        </div>
+      </section>
     </main>
 
     <footer class="site-footer">
-        <div class="container footer-inner">
-            <nav class="footer-nav">
-                <ul>
-                    <li><a href="/index.html">トップページ</a></li>
-                    <li><a href="/product-list.html">商品一覧</a></li>
-                    <li><a href="/artist-list.html">作家紹介</a></li>
-                    <li><a href="#company">会社概要</a></li>
-                    <li><a href="#discord">Discordリンク</a></li>
-                    <li><a href="#meta">Meta</a></li>
-                    <li><a href="#donation">寄付</a></li>
-                </ul>
-            </nav>
-            <div class="footer-logo">BizenDAO</div>
-        </div>
+      <div class="container footer-inner">
+        <nav class="footer-nav">
+          <ul>
+            <li><a href="/index.html">トップページ</a></li>
+            <li><a href="/product-list.html">商品一覧</a></li>
+            <li><a href="/artist-list.html">作家紹介</a></li>
+            <li><a href="#company">会社概要</a></li>
+            <li>
+              <a href="https://discord.gg/Fb3M7HHxs2" target="_blank"
+                >Discordリンク</a
+              >
+            </li>
+            <li><a href="#meta">Meta</a></li>
+            <li><a href="#donation">寄付</a></li>
+          </ul>
+        </nav>
+        <div class="footer-logo">BizenDAO</div>
+      </div>
     </footer>
 
     <script src="js/app.js"></script>
-</body>
-
+  </body>
 </html>
