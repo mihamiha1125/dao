@@ -61,7 +61,17 @@ main {
 }
 
 .logo {
-    font-size: 24px;
+    display: flex;
+    align-items: center;
+    height: 100%;
+}
+
+/* ヘッダーロゴ画像 */
+.logo img {
+    height: clamp(28px, 4vw, 44px);
+    width: auto;
+    object-fit: contain;
+    display: block;
 }
 
 .header-right {
@@ -752,10 +762,18 @@ main {
 .footer-nav a {
     color: #d0d0d0;
 }
-
-.footer-logo {
-    font-size: 24px;
+/* フッター内のロゴ */
+.site-footer .logo {
+    justify-content: center;
 }
+
+/* フッター用サイズ */
+.site-footer .logo img {
+    height: clamp(22px, 3vw, 32px);
+    width: auto;
+    opacity: 0.85;
+}
+
 
 /* ========== Responsive ========== */
 
