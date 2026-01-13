@@ -762,22 +762,31 @@ main {
 .footer-nav a {
     color: #d0d0d0;
 }
-/* フッター内のロゴ */
+/* フッターを基準にする */
+.site-footer {
+  position: relative;
+  overflow: visible; /* 切られるの防止 */
+}
+
+/* ロゴを前面に出して固定 */
 .site-footer .logo {
   position: absolute;
-  right: 18%;      /* ← ここが“今の見た目位置” */
-  bottom: 28px;    /* ← 縦位置も固定 */
+  z-index: 5;          /* 前面へ */
+  right: 18%;
+  bottom: 28px;
   display: inline-flex;
   align-items: center;
 }
 
-
-/* フッター用サイズ */
+/* 画像が0サイズにならないように */
 .site-footer .logo img {
-    height: clamp(22px, 3vw, 32px);
-    width: auto;
-    opacity: 0.85;
+  height: clamp(20px, 2.6vw, 28px);
+  width: auto;
+  display: block;
+  object-fit: contain;
+  opacity: 0.85;
 }
+
 
 
 /* ========== Responsive ========== */
