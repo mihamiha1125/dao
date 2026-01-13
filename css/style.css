@@ -764,8 +764,13 @@ main {
 }
 /* フッター内のロゴ */
 .site-footer .logo {
-    justify-content: center;
+  position: absolute;
+  right: 18%;      /* ← ここが“今の見た目位置” */
+  bottom: 28px;    /* ← 縦位置も固定 */
+  display: inline-flex;
+  align-items: center;
 }
+
 
 /* フッター用サイズ */
 .site-footer .logo img {
