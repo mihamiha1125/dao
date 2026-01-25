@@ -969,3 +969,105 @@ main {
     gap: 8px;
     margin-bottom: 8px;
 }
+
+/* =========================
+   Responsive & A11y Add-ons
+   （HTMLは変更なし／追記だけ）
+   ========================= */
+
+/* フォーカス可視化（キーボード操作しやすく） */
+:focus-visible {
+  outline: 2px solid #9ecbff;
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* 主要画像のアスペクト確保でCLS低減（HTML変更なし） */
+.hero-media img,
+.company-hero-media img { aspect-ratio: 16 / 9; }
+.product-card img { aspect-ratio: 4 / 3; }
+.artist-card img { aspect-ratio: 4 / 3; }
+.tech-media img   { aspect-ratio: 6 / 1; }
+
+/* 狭幅時の左右余白をやや広げて読みやすく */
+@media (max-width: 768px){
+  .container { width: min(1120px, 100% - 28px); }
+}
+
+/* セクション余白を流体化（読みやすさUP） */
+:root{
+  --space-v: clamp(48px, 8vw, 80px);
+}
+.section { padding: var(--space-v) 0; }
+
+/* ヒーロー：縦が短い端末で圧縮 */
+@media (max-width: 640px){
+  .hero { min-height: 70vh; }
+  .hero-content { padding-top: 28vh; padding-bottom: 12vh; }
+  .hero-sub { font-size: 14px; }
+}
+
+/* CTA/ボタン類：タップ領域の最低48pxを確保 */
+.bizen-btn,
+.outline-btn,
+.outline-btn--large,
+.lang-toggle,
+.nav-toggle { min-height: 48px; }
+
+/* Products：段階縮退（PC2 → タブレット2 → スマホ1） */
+@media (max-width: 1024px){
+  .product-grid { gap: 28px; padding-inline: 24px; }
+}
+@media (max-width: 640px){
+  .product-grid {
+    grid-template-columns: 1fr;
+    gap: 20px;
+    padding-inline: 12px;
+  }
+  .product-title { font-size: 18px; }
+  .product-author { font-size: 14px; opacity: .9; }
+}
+
+/* スライダー矢印：小型化＆タップしやすく */
+.slider-arrow,
+.artist-arrow {
+  width: 44px; height: 44px;
+  display: inline-flex; align-items: center; justify-content: center;
+  border-radius: 999px; background: rgba(255,255,255,.08);
+  backdrop-filter: blur(4px);
+}
+@media (max-width: 640px){
+  .slider-arrow, .artist-arrow { font-size: 18px; }
+}
+
+/* Video：重なり調整 */
+@media (max-width: 640px){
+  .video-section { padding: 48px 0; }
+  .video-label { font-size: 18px; letter-spacing: .12em; }
+}
+
+/* Techストリップ：高さと文字サイズの段階縮小 */
+@media (max-width: 880px){
+  .tech-media img { height: 120px; }
+  .tech-media-label { font-size: 18px; }
+}
+@media (max-width: 480px){
+  .tech-media img { height: 100px; }
+  .tech-media-label { font-size: 16px; letter-spacing: .1em; }
+}
+
+/* 会社概要：極小幅のタイトル詰まり解消＋バナー高さ調整 */
+@media (max-width: 480px){
+  .company-head-en { font-size: 28px; letter-spacing: .18em; }
+  .company-hero-media { height: 260px; }
+}
+
+/* フッターロゴ：小画面は絶対配置を解除して崩れ防止 */
+@media (max-width: 640px){
+  .site-footer .logo { position: static; margin-top: 16px; }
+}
+
+/* ユーザーが動きを減らす設定時の配慮 */
+@media (prefers-reduced-motion: reduce){
+  * { animation-duration: 0.001ms !important; animation-iteration-count: 1 !important; transition-duration: 0.001ms !important; }
+}
