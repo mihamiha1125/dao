@@ -178,3 +178,66 @@ document.addEventListener("DOMContentLoaded", () => {
         startAuto();
     })();
 });
+
+// =========================
+// A11y強化：ドロワーのARIAとフォーカストラップ
+// （HTMLは変更せず、JSで属性付与）
+// =========================
+(() => {
+  const btn = document.querySelector(".nav-toggle");
+  const drawer = document.querySelector(".nav-drawer");
+  const overlay = document.querySelector(".nav-overlay");
+  if (!btn || !drawer || !overlay) return;
+
+  // 初期ARIAをJSで付与（HTMLはそのまま）
+  if (!btn.hasAttribute("aria-expanded")) btn.setAttribute("aria-expanded", "false");
+  if (!btn.hasAttribute("aria-label")) btn.setAttribute("aria-label", "メニューを開閉");
+
+  let returnFocusEl = null;
+  const focusableSelector = 'a[href], button:not([disabled]), [tabindex]:not([tabindex="-1"])';
+  const getFocusable = () => Array.from(drawer.querySelectorAll(focusableSelector));
+
+  const isOpen = () => drawer.classList.contains("is-open");
+  const onOpen = () => {
+    btn.setAttribute("aria-expanded", "true");
+    returnFocusEl = document.activeElement;
+    const f = getFocusable();
+    (f[0] || drawer).focus();
+  };
+  const onClose = () => {
+    btn.setAttribute("aria-expanded", "false");
+    (returnFocusEl || btn).focus();
+  };
+
+  // 既存の開閉にフック：MutationObserverで状態検知
+  const mo = new MutationObserver(() => {
+    isOpen() ? onOpen() : onClose();
+  });
+  mo.observe(drawer, { attributes: true, attributeFilter: ["class"] });
+
+  // フォーカストラップ（Tab巡回）
+  document.addEventListener("keydown", (e) => {
+    if (e.key !== "Tab" || !isOpen()) return;
+    const f = getFocusable();
+    if (!f.length) return;
+    const first = f[0];
+    const last = f[f.length - 1];
+    if (e.shiftKey && document.activeElement === first) {
+      e.preventDefault(); last.focus();
+    } else if (!e.shiftKey && document.activeElement === last) {
+      e.preventDefault(); first.focus();
+    }
+  });
+})();
+
+// =========================
+// reduce motion配慮：大きなトランジション抑制
+// （artistスライダーの自動送りはCSSのreduce-motionでほぼ無効化）
+// =========================
+(() => {
+  const prefersReduced = window.matchMedia("(prefers-reduced-motion: reduce)");
+  // ページ内のCSSトランジションを最小化（既存CSSの@mediaと二重でもOK）
+  if (prefersReduced.matches) {
+    document.documentElement.style.setProperty("--motion-off", "1");
+  }
+})();
