@@ -1071,3 +1071,43 @@ main {
 @media (prefers-reduced-motion: reduce){
   * { animation-duration: 0.001ms !important; animation-iteration-count: 1 !important; transition-duration: 0.001ms !important; }
 }
+
+
+/* ボタン系：フォント＆余白を画面幅で自動縮小＋1行保持 */
+.bizen-btn,
+.outline-btn,
+.outline-btn--large {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6em;
+  white-space: nowrap;                     /* ← 改行させない */
+  font-size: clamp(14px, 3.8vw, 18px);     /* ← 画面が狭いほど小さく */
+  padding: clamp(10px, 2.8vw, 18px) clamp(20px, 6vw, 96px); /* ← 余白も縮む */
+  letter-spacing: clamp(0.08em, 0.5vw, 0.18em);             /* ← 詰める */
+  max-width: 100%;
+}
+
+.bizen-btn .arrow,
+.outline-btn .arrow {
+  margin-left: clamp(10px, 2vw, 24px);     /* ← 矢印の間隔も可変 */
+  flex: 0 0 auto;                          /* ← 矢印だけの折返し防止 */
+}
+
+/* さらに狭い端末での保険：一回り小さく＆横paddingを減らす */
+@media (max-width: 360px) {
+  .bizen-btn,
+  .outline-btn,
+  .outline-btn--large {
+    font-size: clamp(13px, 4.2vw, 16px);
+    padding-left: clamp(14px, 4.8vw, 20px);
+    padding-right: clamp(14px, 4.8vw, 20px);
+    letter-spacing: 0.06em;
+  }
+}
+
+/* センター配置のまま、はみ出し防止（稀に効く保険） */
+.section-cta {
+  display: flex;
+  justify-content: center;
+}
