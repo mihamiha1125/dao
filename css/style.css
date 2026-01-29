@@ -11,7 +11,7 @@ body {
         "Noto Sans JP", system-ui, sans-serif;
     color: #f6f6f6;
     line-height: 1.7;
-    background: #000;
+    background: radial-gradient(circle at top, #252933, #111318);
 }
 
 img {
