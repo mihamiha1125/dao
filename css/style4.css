@@ -152,15 +152,14 @@ h2 {
   スマホ微調整
 ========================= */
 @media screen and (max-width: 640px) {
-    .title_set {
-        text-align: center;
-    }
-    .title_set p {
-        text-align: left;
-        margin: 0 auto;
-    }
-
+  .title_set p {
+    text-align: left;          /* 文字は左揃え */
+    max-width: 32em;           /* ← 要素の横幅を制限 */
+    margin: 0 auto;            /* ← 要素自体は中央 */
+    padding: 0 8px;            /* ← 端ギリギリ防止（任意） */
+  }
 }
+
 
 @media (max-width: 480px) {
     h2 {
