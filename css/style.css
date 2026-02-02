@@ -762,29 +762,32 @@ main {
 .footer-nav a {
     color: #d0d0d0;
 }
+
 /* フッターを基準にする */
 .site-footer {
-  position: relative;
-  overflow: visible; /* 切られるの防止 */
+    position: relative;
+    overflow: visible;
+    /* 切られるの防止 */
 }
 
 /* ロゴを前面に出して固定 */
 .site-footer .logo {
-  position: absolute;
-  z-index: 5;          /* 前面へ */
-  right: 18%;
-  bottom: 28px;
-  display: inline-flex;
-  align-items: center;
+    position: absolute;
+    z-index: 5;
+    /* 前面へ */
+    right: 18%;
+    bottom: 28px;
+    display: inline-flex;
+    align-items: center;
 }
 
 /* 画像が0サイズにならないように */
 .site-footer .logo img {
-  height: clamp(20px, 2.6vw, 28px);
-  width: auto;
-  display: block;
-  object-fit: contain;
-  opacity: 0.85;
+    height: clamp(20px, 2.6vw, 28px);
+    width: auto;
+    display: block;
+    object-fit: contain;
+    opacity: 0.85;
 }
 
 
@@ -977,34 +980,59 @@ main {
 
 /* フォーカス可視化（キーボード操作しやすく） */
 :focus-visible {
-  outline: 2px solid #9ecbff;
-  outline-offset: 2px;
-  border-radius: 4px;
+    outline: 2px solid #9ecbff;
+    outline-offset: 2px;
+    border-radius: 4px;
 }
 
 /* 主要画像のアスペクト確保でCLS低減（HTML変更なし） */
 .hero-media img,
-.company-hero-media img { aspect-ratio: 16 / 9; }
-.product-card img { aspect-ratio: 4 / 3; }
-.artist-card img { aspect-ratio: 4 / 3; }
-.tech-media img   { aspect-ratio: 6 / 1; }
+.company-hero-media img {
+    aspect-ratio: 16 / 9;
+}
+
+.product-card img {
+    aspect-ratio: 4 / 3;
+}
+
+.artist-card img {
+    aspect-ratio: 4 / 3;
+}
+
+.tech-media img {
+    aspect-ratio: 6 / 1;
+}
 
 /* 狭幅時の左右余白をやや広げて読みやすく */
-@media (max-width: 768px){
-  .container { width: min(1120px, 100% - 28px); }
+@media (max-width: 768px) {
+    .container {
+        width: min(1120px, 100% - 28px);
+    }
 }
 
 /* セクション余白を流体化（読みやすさUP） */
-:root{
-  --space-v: clamp(48px, 8vw, 80px);
+:root {
+    --space-v: clamp(48px, 8vw, 80px);
 }
-.section { padding: var(--space-v) 0; }
+
+.section {
+    padding: var(--space-v) 0;
+}
 
 /* ヒーロー：縦が短い端末で圧縮 */
-@media (max-width: 640px){
-  .hero { min-height: 70vh; }
-  .hero-content { padding-top: 28vh; padding-bottom: 12vh; }
-  .hero-sub { font-size: 14px; }
+@media (max-width: 640px) {
+    .hero {
+        min-height: 70vh;
+    }
+
+    .hero-content {
+        padding-top: 28vh;
+        padding-bottom: 12vh;
+    }
+
+    .hero-sub {
+        font-size: 14px;
+    }
 }
 
 /* CTA/ボタン類：タップ領域の最低48pxを確保 */
@@ -1012,64 +1040,117 @@ main {
 .outline-btn,
 .outline-btn--large,
 .lang-toggle,
-.nav-toggle { min-height: 48px; }
+.nav-toggle {
+    min-height: 48px;
+}
 
 /* Products：段階縮退（PC2 → タブレット2 → スマホ1） */
-@media (max-width: 1024px){
-  .product-grid { gap: 28px; padding-inline: 24px; }
+@media (max-width: 1024px) {
+    .product-grid {
+        gap: 28px;
+        padding-inline: 24px;
+    }
 }
-@media (max-width: 640px){
-  .product-grid {
-    grid-template-columns: 1fr;
-    gap: 20px;
-    padding-inline: 12px;
-  }
-  .product-title { font-size: 18px; }
-  .product-author { font-size: 14px; opacity: .9; }
+
+@media (max-width: 640px) {
+    .product-grid {
+        grid-template-columns: 1fr;
+        gap: 20px;
+        padding-inline: 12px;
+    }
+
+    .product-title {
+        font-size: 18px;
+    }
+
+    .product-author {
+        font-size: 14px;
+        opacity: .9;
+    }
 }
 
 /* スライダー矢印：小型化＆タップしやすく */
 .slider-arrow,
 .artist-arrow {
-  width: 44px; height: 44px;
-  display: inline-flex; align-items: center; justify-content: center;
-  border-radius: 999px; background: rgba(255,255,255,.08);
-  backdrop-filter: blur(4px);
+    width: 44px;
+    height: 44px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, .08);
+    backdrop-filter: blur(4px);
 }
-@media (max-width: 640px){
-  .slider-arrow, .artist-arrow { font-size: 18px; }
+
+@media (max-width: 640px) {
+
+    .slider-arrow,
+    .artist-arrow {
+        font-size: 18px;
+    }
 }
 
 /* Video：重なり調整 */
-@media (max-width: 640px){
-  .video-section { padding: 48px 0; }
-  .video-label { font-size: 18px; letter-spacing: .12em; }
+@media (max-width: 640px) {
+    .video-section {
+        padding: 48px 0;
+    }
+
+    .video-label {
+        font-size: 18px;
+        letter-spacing: .12em;
+    }
 }
 
 /* Techストリップ：高さと文字サイズの段階縮小 */
-@media (max-width: 880px){
-  .tech-media img { height: 120px; }
-  .tech-media-label { font-size: 18px; }
+@media (max-width: 880px) {
+    .tech-media img {
+        height: 120px;
+    }
+
+    .tech-media-label {
+        font-size: 18px;
+    }
 }
-@media (max-width: 480px){
-  .tech-media img { height: 100px; }
-  .tech-media-label { font-size: 16px; letter-spacing: .1em; }
+
+@media (max-width: 480px) {
+    .tech-media img {
+        height: 100px;
+    }
+
+    .tech-media-label {
+        font-size: 16px;
+        letter-spacing: .1em;
+    }
 }
 
 /* 会社概要：極小幅のタイトル詰まり解消＋バナー高さ調整 */
-@media (max-width: 480px){
-  .company-head-en { font-size: 28px; letter-spacing: .18em; }
-  .company-hero-media { height: 260px; }
+@media (max-width: 480px) {
+    .company-head-en {
+        font-size: 28px;
+        letter-spacing: .18em;
+    }
+
+    .company-hero-media {
+        height: 260px;
+    }
 }
 
 /* フッターロゴ：小画面は絶対配置を解除して崩れ防止 */
-@media (max-width: 640px){
-  .site-footer .logo { position: static; margin-top: 16px; }
+@media (max-width: 640px) {
+    .site-footer .logo {
+        position: static;
+        margin-top: 16px;
+    }
 }
 
 /* ユーザーが動きを減らす設定時の配慮 */
-@media (prefers-reduced-motion: reduce){
-  * { animation-duration: 0.001ms !important; animation-iteration-count: 1 !important; transition-duration: 0.001ms !important; }
+@media (prefers-reduced-motion: reduce) {
+    * {
+        animation-duration: 0.001ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.001ms !important;
+    }
 }
 
 
@@ -1077,37 +1158,96 @@ main {
 .bizen-btn,
 .outline-btn,
 .outline-btn--large {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.6em;
-  white-space: nowrap;                     /* ← 改行させない */
-  font-size: clamp(14px, 3.8vw, 18px);     /* ← 画面が狭いほど小さく */
-  padding: clamp(10px, 2.8vw, 18px) clamp(20px, 6vw, 96px); /* ← 余白も縮む */
-  letter-spacing: clamp(0.08em, 0.5vw, 0.18em);             /* ← 詰める */
-  max-width: 100%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.6em;
+    white-space: nowrap;
+    /* ← 改行させない */
+    font-size: clamp(14px, 3.8vw, 18px);
+    /* ← 画面が狭いほど小さく */
+    padding: clamp(10px, 2.8vw, 18px) clamp(20px, 6vw, 96px);
+    /* ← 余白も縮む */
+    letter-spacing: clamp(0.08em, 0.5vw, 0.18em);
+    /* ← 詰める */
+    max-width: 100%;
 }
 
 .bizen-btn .arrow,
 .outline-btn .arrow {
-  margin-left: clamp(10px, 2vw, 24px);     /* ← 矢印の間隔も可変 */
-  flex: 0 0 auto;                          /* ← 矢印だけの折返し防止 */
+    margin-left: clamp(10px, 2vw, 24px);
+    /* ← 矢印の間隔も可変 */
+    flex: 0 0 auto;
+    /* ← 矢印だけの折返し防止 */
 }
 
 /* さらに狭い端末での保険：一回り小さく＆横paddingを減らす */
 @media (max-width: 360px) {
-  .bizen-btn,
-  .outline-btn,
-  .outline-btn--large {
-    font-size: clamp(13px, 4.2vw, 16px);
-    padding-left: clamp(14px, 4.8vw, 20px);
-    padding-right: clamp(14px, 4.8vw, 20px);
-    letter-spacing: 0.06em;
-  }
+
+    .bizen-btn,
+    .outline-btn,
+    .outline-btn--large {
+        font-size: clamp(13px, 4.2vw, 16px);
+        padding-left: clamp(14px, 4.8vw, 20px);
+        padding-right: clamp(14px, 4.8vw, 20px);
+        letter-spacing: 0.06em;
+    }
 }
 
 /* センター配置のまま、はみ出し防止（稀に効く保険） */
 .section-cta {
-  display: flex;
-  justify-content: center;
+    display: flex;
+    justify-content: center;
+}
+
+/* =========================
+   SPのみ：フッターをロゴだけにする
+   ========================= */
+@media (max-width: 640px) {
+    .company-body {
+        font-size: 13px;
+        text-align: left;
+    }
+
+    /* ナビは消す（＝フッターを実質なくす） */
+    .site-footer .footer-nav {
+        display: none !important;
+    }
+
+    /* フッターの背景/線/余白など「フッター感」を消す */
+    .site-footer {
+        background: transparent !important;
+        border-top: none !important;
+        padding: 18px 0 22px !important;
+        /* ロゴだけ見せる最低限 */
+    }
+
+    /* container内の横並びを解除して中央へ */
+    .site-footer .footer-inner {
+        display: flex !important;
+        justify-content: center !important;
+        align-items: center !important;
+        gap: 0 !important;
+    }
+
+    /* ロゴを中央に固定（absolute/右寄せ等を無効化） */
+    .site-footer .footer-logo {
+        margin: 0 !important;
+    }
+
+    .site-footer .footer-logo .logo {
+        position: static !important;
+        display: inline-flex !important;
+        justify-content: center !important;
+        align-items: center !important;
+        margin: 0 auto !important;
+    }
+
+    /* ロゴサイズ（お好みで微調整OK） */
+    .site-footer .footer-logo .logo img {
+        height: 24px;
+        /* 22〜28くらいで調整 */
+        width: auto;
+        opacity: 0.9;
+    }
 }
