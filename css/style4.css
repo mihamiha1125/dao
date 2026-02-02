@@ -152,6 +152,9 @@ h2 {
   スマホ微調整
 ========================= */
 @media screen and (max-width: 640px) {
+    .title_set {
+        text-align: center;
+    }
     .title_set p {
         text-align: left;
         margin: 0 auto;
