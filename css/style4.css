@@ -1,4 +1,4 @@
-@import url("./style.css");
+@import url("/css/style.css");
 
 body {
     text-align: center;
@@ -151,6 +151,13 @@ h2 {
 /* =========================
   スマホ微調整
 ========================= */
+@media screen and (max-width: 640px) {
+    .title_set p {
+        text-align: left;
+    }
+
+}
+
 @media (max-width: 480px) {
     h2 {
         margin-top: 40px;
