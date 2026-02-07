@@ -1,0 +1,2071 @@
+<!DOCTYPE html>
+<!--
+MIT License
+
+Copyright (c) 2025 bon-soleil
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+---
+
+This project includes code from the following third-party libraries:
+
+1. **lit (by Google LLC)**
+   License: BSD 3-Clause
+
+   Copyright 2017 Google LLC
+   SPDX-License-Identifier: BSD-3-Clause
+
+   https://github.com/lit/lit/blob/main/LICENSE
+
+2. **Three.js**
+   License: MIT License
+
+   Copyright 2010-2024 Three.js Authors
+   SPDX-License-Identifier: MIT
+
+
+-->
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+    <title>3D Model Viewer</title>
+    <script type="module" src="./model-viewer.min.js"></script>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+          Oxygen, Ubuntu, Cantarell, sans-serif;
+        background-color: #000000;
+        margin: 0;
+        padding: 0;
+        overflow: hidden;
+        position: fixed;
+        width: 100%;
+        height: 100%;
+        /* モバイルブラウザのアドレスバーを考慮 */
+        height: 100vh;
+        height: -webkit-fill-available;
+      }
+      
+      /* iOSのセーフエリア対応 */
+      @supports (padding: env(safe-area-inset-top)) {
+        body {
+          padding-top: env(safe-area-inset-top);
+          padding-bottom: env(safe-area-inset-bottom);
+          padding-left: env(safe-area-inset-left);
+          padding-right: env(safe-area-inset-right);
+        }
+      }
+
+      .container {
+        position: relative;
+        width: 100%;
+        height: 100%;
+        background-color: #000000;
+      }
+
+      model-viewer {
+        width: 100%;
+        height: 100%;
+        --poster-color: #000000;
+        --progress-bar-color: #007bff;
+        --progress-mask: transparent;
+        display: block;
+        background-color: var(--poster-color);
+      }
+
+      /* カスタムプログレスバー */
+      .custom-progress-bar {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 10px;
+        z-index: 1000;
+        background: rgba(255, 255, 255, 0.95);
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+      }
+
+      .progress-text {
+        font-size: 14px;
+        color: #333;
+        font-weight: 500;
+      }
+
+      .progress-bar-track {
+        width: 200px;
+        height: 6px;
+        background-color: rgba(0, 0, 0, 0.1);
+        border-radius: 3px;
+        overflow: hidden;
+      }
+
+      .progress-bar-fill {
+        height: 100%;
+        background: linear-gradient(90deg, #007bff, #0056b3);
+        border-radius: 3px;
+        transition: width 0.3s ease;
+        animation: progressPulse 1.5s ease-in-out infinite;
+        width: 0%;
+      }
+
+      .progress-percent {
+        font-size: 12px;
+        color: #666;
+        font-weight: 500;
+      }
+
+      @keyframes progressPulse {
+        0%,
+        100% {
+          opacity: 1;
+        }
+        50% {
+          opacity: 0.7;
+        }
+      }
+
+      /* ライトコントロールボタン */
+      .light-control-button {
+        position: absolute;
+        top: 15px;
+        right: 15px;
+        width: 30px;
+        height: 30px;
+        border: none;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.9);
+        cursor: pointer;
+        z-index: 100;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+        transition: all 0.2s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .light-control-button svg {
+        width: 21px;
+        height: 21px;
+        fill: #333;
+      }
+
+      .light-control-button:hover {
+        background: rgba(255, 255, 255, 1);
+        transform: scale(1.1);
+      }
+
+      /* ライトコントロールパネル */
+      .light-controls {
+        position: absolute;
+        top: 15px;
+        right: 50px;
+        background: rgba(255, 255, 255, 0.95);
+        border-radius: 8px;
+        padding: 15px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        z-index: 100;
+        min-width: 200px;
+        display: none;
+      }
+
+      .control-group {
+        margin-bottom: 12px;
+      }
+
+      .control-group:last-child {
+        margin-bottom: 0;
+      }
+
+      .control-label {
+        display: block;
+        font-size: 12px;
+        font-weight: 500;
+        color: #333;
+        margin-bottom: 5px;
+      }
+
+      .slider {
+        width: 100%;
+        height: 4px;
+        border-radius: 2px;
+        background: #ddd;
+        outline: none;
+        -webkit-appearance: none;
+      }
+
+      .slider::-webkit-slider-thumb {
+        -webkit-appearance: none;
+        width: 16px;
+        height: 16px;
+        border-radius: 50%;
+        background: #007bff;
+        cursor: pointer;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+      }
+
+      .slider::-moz-range-thumb {
+        width: 16px;
+        height: 16px;
+        border-radius: 50%;
+        background: #007bff;
+        cursor: pointer;
+        border: none;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+      }
+
+      .preset-buttons {
+        display: flex;
+        gap: 5px;
+        margin-top: 10px;
+      }
+
+      .preset-button {
+        flex: 1;
+        padding: 6px 8px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        background: white;
+        font-size: 11px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+      }
+
+      .preset-button:hover {
+        background: #f0f0f0;
+        border-color: #007bff;
+      }
+
+      /* 背景切り替えボタン */
+      .background-toggle {
+        display: flex;
+        gap: 8px;
+        align-items: center;
+      }
+
+      .bg-button {
+        width: 32px;
+        height: 32px;
+        border: 2px solid #ddd;
+        border-radius: 50%;
+        background: transparent;
+        font-size: 16px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.2s ease;
+      }
+
+      .bg-button.active {
+        border-color: #007bff;
+        box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.2);
+      }
+
+      .bg-button:hover {
+        border-color: #007bff;
+        transform: scale(1.1);
+      }
+
+      .bg-black {
+        background: #000;
+      }
+
+      .bg-white {
+        background: #fff;
+        border-color: #ccc;
+      }
+
+      .bg-white.active {
+        border-color: #007bff;
+      }
+
+      /* コントロールヒント */
+      .controls-hint {
+        position: absolute;
+        bottom: 10px;
+        left: 10px;
+        right: 10px;
+        background: rgba(0, 0, 0, 0.7);
+        color: white;
+        padding: 8px 12px;
+        border-radius: 6px;
+        font-size: 12px;
+        text-align: center;
+        pointer-events: none;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+      }
+
+      .container:hover .controls-hint {
+        opacity: 1;
+      }
+
+      .controls-hint p {
+        margin: 0;
+        opacity: 0.9;
+      }
+      
+      /* センターボタンのホバー効果 */
+      .center-button:hover {
+        background: rgba(255, 255, 255, 1);
+        transform: scale(1.1);
+      }
+      
+      /* 最大化ボタンのホバー効果 */
+      .maximize-button:hover {
+        background: rgba(255, 255, 255, 1);
+        transform: scale(1.1);
+      }
+
+      /* エラー表示 */
+      .error-display {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        height: 100%;
+        min-height: 300px;
+        padding: 40px 20px;
+        text-align: center;
+        background: rgba(255, 255, 255, 0.95);
+        border-radius: 12px;
+        position: relative;
+      }
+
+      .error-icon {
+        font-size: 48px;
+        margin-bottom: 16px;
+      }
+
+      .error-text {
+        max-width: 400px;
+      }
+
+      .error-title {
+        font-size: 18px;
+        font-weight: 600;
+        color: #dc3545;
+        margin: 0 0 8px 0;
+      }
+
+      .error-message {
+        font-size: 14px;
+        color: #666;
+        margin: 0 0 20px 0;
+        line-height: 1.4;
+      }
+
+      .viewer-link {
+        display: inline-block;
+        padding: 8px 16px;
+        background-color: #007bff;
+        color: white;
+        text-decoration: none;
+        border: none;
+        border-radius: 6px;
+        font-size: 14px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: background-color 0.2s;
+      }
+
+      .viewer-link:hover {
+        background-color: #0056b3;
+        color: white;
+        text-decoration: none;
+      }
+
+      /* モバイル対応 */
+      @media (max-width: 768px) {
+        .light-controls {
+          right: 10px;
+          top: 55px;
+          min-width: 180px;
+        }
+        
+        /* モバイルではボタンを少し内側に配置 */
+        .maximize-button {
+          top: calc(15px + env(safe-area-inset-top)) !important;
+          left: calc(15px + env(safe-area-inset-left)) !important;
+        }
+        
+        .center-button {
+          top: calc(15px + env(safe-area-inset-top)) !important;
+          right: calc(60px + env(safe-area-inset-right)) !important;
+        }
+        
+        .light-control-button {
+          top: calc(15px + env(safe-area-inset-top)) !important;
+          right: calc(15px + env(safe-area-inset-right)) !important;
+        }
+      }
+      
+      /* エラースピナー */
+      .error-spinner {
+        width: 40px;
+        height: 40px;
+        border: 4px solid rgba(255, 255, 255, 0.3);
+        border-top: 4px solid #fff;
+        border-radius: 50%;
+        margin: 0 auto;
+        animation: spin 1s linear infinite;
+      }
+      
+      @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+      }
+      
+      /* メタマスク用の吹き出し */
+      .metamask-hint {
+        position: absolute;
+        bottom: 20px;
+        right: 20px;
+        background: #007bff;
+        color: white;
+        padding: 12px 16px;
+        border-radius: 8px;
+        font-size: 13px;
+        max-width: 250px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3), 0 8px 24px rgba(0, 0, 0, 0.2);
+        animation: pulseHint 2s ease-in-out infinite;
+      }
+      
+      .metamask-hint::after {
+        content: '';
+        position: absolute;
+        bottom: -8px;
+        right: 30px;
+        width: 0;
+        height: 0;
+        border-left: 8px solid transparent;
+        border-right: 8px solid transparent;
+        border-top: 8px solid #007bff;
+      }
+      
+      @keyframes pulseHint {
+        0%, 100% { transform: scale(1); }
+        50% { transform: scale(1.05); }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <!-- モデルビューアー -->
+      <model-viewer
+        id="modelViewer"
+        alt="goodsun | bon-soleil"
+        camera-controls
+        loading="eager"
+        reveal="auto"
+        exposure="0.7"
+        shadow-intensity="0.7"
+        shadow-softness="0.3"
+        style="--poster-color: #000000; background-color: #000000"
+        camera-orbit="0deg 75deg 105%"
+        field-of-view="30deg"
+        min-camera-orbit="auto auto auto"
+        max-camera-orbit="auto auto auto"
+        min-field-of-view="10deg"
+        max-field-of-view="45deg"
+        autoplay
+        animation-crossfade-duration="300ms"
+      >
+        <!-- プログレスバーを無効化 -->
+        <div slot="progress-bar"></div>
+
+        <!-- カスタムプログレスバー -->
+        <div class="custom-progress-bar" id="customProgressBar">
+          <div class="progress-text">Loading 3D Model...</div>
+          <div class="progress-bar-track">
+            <div class="progress-bar-fill" id="progressBarFill"></div>
+          </div>
+          <div class="progress-percent" id="progressPercent">0%</div>
+        </div>
+      </model-viewer>
+
+      <!-- 最大化ボタン -->
+      <a
+        href=""
+        target="_blank"
+        class="maximize-button"
+        id="maximizeButton"
+        title="Open in New Window"
+        style="position: absolute; top: 15px; left: 15px; width: 30px; height: 30px; border: none; border-radius: 50%; background: rgba(255, 255, 255, 0.9); cursor: pointer; z-index: 100; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2); transition: all 0.2s ease; display: flex; align-items: center; justify-content: center; text-decoration: none;"
+      >
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" style="width: 18px; height: 18px; fill: #333;">
+          <!--!Font Awesome Free 6.7.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2025 Fonticons, Inc.-->
+          <path d="M320 0c-17.7 0-32 14.3-32 32s14.3 32 32 32l82.7 0L201.4 265.4c-12.5 12.5-12.5 32.8 0 45.3s32.8 12.5 45.3 0L448 109.3l0 82.7c0 17.7 14.3 32 32 32s32-14.3 32-32l0-160c0-17.7-14.3-32-32-32L320 0zM80 32C35.8 32 0 67.8 0 112L0 432c0 44.2 35.8 80 80 80l320 0c44.2 0 80-35.8 80-80l0-320c0-17.7-14.3-32-32-32s-32 14.3-32 32l0 320c0 8.8-7.2 16-16 16L80 448c-8.8 0-16-7.2-16-16l0-320c0-8.8 7.2-16 16-16l224 0c17.7 0 32-14.3 32-32s-14.3-32-32-32L80 32z"/>
+        </svg>
+      </a>
+
+      <!-- センターボタン -->
+      <button
+        class="center-button"
+        id="centerButton"
+        title="Center Model"
+        style="position: absolute; top: 15px; right: 60px; width: 30px; height: 30px; border: none; border-radius: 50%; background: rgba(255, 255, 255, 0.9); cursor: pointer; z-index: 100; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2); transition: all 0.2s ease; display: flex; align-items: center; justify-content: center;"
+      >
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" style="width: 18px; height: 18px; fill: #333;">
+          <!--!Font Awesome Free 6.7.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2025 Fonticons, Inc.-->
+          <path d="M256 0c17.7 0 32 14.3 32 32l0 34.7C368.4 80.1 431.9 143.6 445.3 224l34.7 0c17.7 0 32 14.3 32 32s-14.3 32-32 32l-34.7 0C431.9 368.4 368.4 431.9 288 445.3l0 34.7c0 17.7-14.3 32-32 32s-32-14.3-32-32l0-34.7C143.6 431.9 80.1 368.4 66.7 288L32 288c-17.7 0-32-14.3-32-32s14.3-32 32-32l34.7 0C80.1 143.6 143.6 80.1 224 66.7L224 32c0-17.7 14.3-32 32-32zM128 256a128 128 0 1 0 256 0 128 128 0 1 0 -256 0zm128-80a80 80 0 1 1 0 160 80 80 0 1 1 0-160z"/>
+        </svg>
+      </button>
+
+      <!-- ライトコントロールボタン -->
+      <button
+        class="light-control-button"
+        id="lightControlButton"
+        title="Light Controls"
+      >
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512">
+          <!--!Font Awesome Free 6.7.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2025 Fonticons, Inc.-->
+          <path
+            d="M272 384c9.6-31.9 29.5-59.1 49.2-86.2c0 0 0 0 0 0c5.2-7.1 10.4-14.2 15.4-21.4c19.8-28.5 31.4-63 31.4-100.3C368 78.8 289.2 0 192 0S16 78.8 16 176c0 37.3 11.6 71.9 31.4 100.3c5 7.2 10.2 14.3 15.4 21.4c0 0 0 0 0 0c19.8 27.1 39.7 54.4 49.2 86.2l160 0zM192 512c44.2 0 80-35.8 80-80l0-16-160 0 0 16c0 44.2 35.8 80 80 80zM112 176c0 8.8-7.2 16-16 16s-16-7.2-16-16c0-61.9 50.1-112 112-112c8.8 0 16 7.2 16 16s-7.2 16-16 16c-44.2 0-80 35.8-80 80z"
+          />
+        </svg>
+      </button>
+
+      <!-- ライトコントロールパネル -->
+      <div class="light-controls" id="lightControls">
+        <div class="control-group">
+          <label class="control-label">
+            Brightness: <span id="exposureValue">70</span>%
+          </label>
+          <input
+            type="range"
+            min="0.1"
+            max="2.0"
+            step="0.1"
+            value="0.7"
+            id="exposureSlider"
+            class="slider"
+          />
+        </div>
+
+        <div class="control-group">
+          <label class="control-label">
+            Shadow: <span id="shadowValue">70</span>%
+          </label>
+          <input
+            type="range"
+            min="0"
+            max="2.0"
+            step="0.1"
+            value="0.7"
+            id="shadowSlider"
+            class="slider"
+          />
+        </div>
+
+        <div class="control-group">
+          <label class="control-label">Background</label>
+          <div class="background-toggle">
+            <button
+              id="bgBlackBtn"
+              class="bg-button bg-black active"
+              title="Black background"
+            >
+              ⚫
+            </button>
+            <button
+              id="bgWhiteBtn"
+              class="bg-button bg-white"
+              title="White background"
+            >
+              ⚪
+            </button>
+          </div>
+        </div>
+
+        <div class="preset-buttons">
+          <button class="preset-button" onclick="setPreset(0.5, 0.3)">
+            Dim
+          </button>
+          <button class="preset-button" onclick="setPreset(0.7, 0.7)">
+            Normal
+          </button>
+          <button class="preset-button" onclick="setPreset(1.5, 1.2)">
+            Bright
+          </button>
+        </div>
+      </div>
+
+      <!-- コントロールヒント -->
+      <div class="controls-hint">
+        <p>Drag to rotate • Scroll to zoom • Right-click to pan</p>
+      </div>
+    </div>
+
+    <script>
+      const modelViewer = document.getElementById("modelViewer");
+      const lightControlButton = document.getElementById("lightControlButton");
+      const lightControls = document.getElementById("lightControls");
+      const customProgressBar = document.getElementById("customProgressBar");
+      const progressBarFill = document.getElementById("progressBarFill");
+      const progressPercent = document.getElementById("progressPercent");
+      const exposureSlider = document.getElementById("exposureSlider");
+      const shadowSlider = document.getElementById("shadowSlider");
+      const exposureValue = document.getElementById("exposureValue");
+      const shadowValue = document.getElementById("shadowValue");
+      const bgBlackBtn = document.getElementById("bgBlackBtn");
+      const bgWhiteBtn = document.getElementById("bgWhiteBtn");
+      const centerButton = document.getElementById("centerButton");
+
+      let showControls = false;
+      let currentBackgroundColor = "black";
+
+      // ライトコントロールの表示/非表示
+      lightControlButton.addEventListener("click", () => {
+        showControls = !showControls;
+        lightControls.style.display = showControls ? "block" : "none";
+      });
+      
+      // モデルをセンターに配置する関数
+      function centerModel() {
+        if (!modelViewer || !modelViewer.loaded) {
+          console.log("Model not loaded yet");
+          return;
+        }
+        
+        // 現在のカメラ位置を取得
+        const currentOrbit = modelViewer.getCameraOrbit();
+        console.log("Current camera orbit:", currentOrbit);
+        
+        // モデルのバウンディングボックスの中心を取得
+        const bounds = modelViewer.getBoundingBoxCenter();
+        console.log("Model bounds center:", bounds);
+        
+        // バウンディングボックスの中心をカメラターゲットに設定
+        if (bounds) {
+          // メートル単位で設定（model-viewerの仕様）
+          modelViewer.cameraTarget = `${bounds.x}m ${bounds.y}m ${bounds.z}m`;
+        } else {
+          // フォールバック: 自動センタリング
+          modelViewer.cameraTarget = "auto auto auto";
+        }
+        
+        // 現在の角度を維持しながら距離のみを調整
+        const theta = currentOrbit.theta;
+        const phi = currentOrbit.phi;
+        
+        // モデル全体が見えるように距離を調整
+        modelViewer.cameraOrbit = `${theta}rad ${phi}rad 105%`;
+        
+        // スムーズなトランジション
+        modelViewer.interpolationDecay = 100;
+        
+        console.log("Model centered with target:", modelViewer.cameraTarget);
+        console.log("Model centered with orbit:", modelViewer.cameraOrbit);
+      }
+      
+      // センターボタンのクリックイベント
+      centerButton.addEventListener("click", () => {
+        centerModel();
+      });
+
+      // モデル読み込み完了
+      modelViewer.addEventListener("load", () => {
+        console.log("Model loaded successfully");
+        updateBackgroundColor();
+
+        // 裏面に色をつける - 複数のアプローチを順次試行
+        setTimeout(() => {
+          addBackfaceColorSimple();
+        }, 500);
+      });
+
+      modelViewer.addEventListener("error", (event) => {
+        console.error("🚨 Model loading error detected:", event.detail);
+        console.error("🚨 Current model src:", modelViewer.src);
+        console.error("🚨 Error event object:", event);
+        
+        customProgressBar.style.display = "none";
+
+        // エラー表示
+        let errorMsg = "Failed to load 3D model";
+        if (event.detail) {
+          if (event.detail.type === "loadfailure") {
+            // sourceErrorをチェックしてより詳細なエラーメッセージを生成
+            if (event.detail.sourceError) {
+              const sourceError = event.detail.sourceError;
+              console.error("🚨 Source error:", sourceError);
+              
+              // TypeError: Failed to fetchはCORSまたはネットワークエラー
+              if (sourceError.message && sourceError.message.includes("Failed to fetch")) {
+                errorMsg = "Network error or CORS policy blocked the request";
+                console.error("🚨 CORS/Network error detected");
+              } else if (
+                sourceError.message &&
+                sourceError.message.includes("Invalid typed array length")
+              ) {
+                errorMsg = "Model file is too large for browser memory";
+              } else if (
+                sourceError.message &&
+                sourceError.message.includes("texture")
+              ) {
+                errorMsg = "Failed to load model textures";
+              } else if (
+                sourceError.message &&
+                sourceError.message.includes("scene")
+              ) {
+                errorMsg = "Model file is corrupted or incompatible format";
+              } else {
+                errorMsg = `Model loading failed: ${sourceError.message || "Unknown error"}`;
+              }
+            } else {
+              // WebView環境かどうかで異なるメッセージ
+              if (detectWebView()) {
+                errorMsg = "Failed to load 3D model in this browser environment";
+              } else {
+                errorMsg = "Failed to load 3D model";
+              }
+              console.error("🚨 Load failure detected without source error");
+            }
+          } else if (event.detail.sourceError) {
+            const sourceError = event.detail.sourceError;
+            console.error("🚨 Source error without loadfailure:", sourceError);
+            errorMsg = `Model loading error: ${sourceError.message || "Unknown error"}`;
+          }
+        }
+
+        console.error("🚨 Final error message:", errorMsg);
+        console.error("🚨 Model URL:", modelViewer.src);
+        showError(errorMsg, modelViewer.src);
+      });
+
+      // タイムアウト監視を追加
+      let loadingTimeout;
+      
+      modelViewer.addEventListener("progress", (event) => {
+        const progress = event.detail.totalProgress;
+        console.log(`📊 Loading progress: ${(progress * 100).toFixed(1)}%`);
+
+        progressBarFill.style.width = `${progress * 100}%`;
+        progressPercent.textContent = `${Math.round(progress * 100)}%`;
+
+        // タイムアウトをリセット
+        clearTimeout(loadingTimeout);
+        
+        // 進行が止まった場合のタイムアウト（30秒）
+        loadingTimeout = setTimeout(() => {
+          console.error("🚨 Loading timeout detected - no progress for 30 seconds");
+          if (progress < 1.0) {
+            console.error("🚨 Calling showError due to timeout");
+            showError("Loading timed out - possible network or memory issue", modelViewer.src);
+          }
+        }, 30000);
+
+        // 100%になったら即座に非表示
+        if (progress >= 1.0) {
+          customProgressBar.style.display = "none";
+          clearTimeout(loadingTimeout);
+        } else {
+          customProgressBar.style.display = "flex";
+        }
+      });
+
+
+      // スライダーイベント
+      exposureSlider.addEventListener("input", (e) => {
+        const value = parseFloat(e.target.value);
+        modelViewer.exposure = value;
+        exposureValue.textContent = Math.round(value * 100);
+      });
+
+      shadowSlider.addEventListener("input", (e) => {
+        const value = parseFloat(e.target.value);
+        modelViewer.shadowIntensity = value;
+        shadowValue.textContent = Math.round(value * 100);
+      });
+
+      // 背景色変更
+      bgBlackBtn.addEventListener("click", () => {
+        currentBackgroundColor = "black";
+        updateBackgroundButtons();
+        updateBackgroundColor();
+      });
+
+      bgWhiteBtn.addEventListener("click", () => {
+        currentBackgroundColor = "white";
+        updateBackgroundButtons();
+        updateBackgroundColor();
+      });
+
+      function updateBackgroundButtons() {
+        bgBlackBtn.classList.toggle(
+          "active",
+          currentBackgroundColor === "black"
+        );
+        bgWhiteBtn.classList.toggle(
+          "active",
+          currentBackgroundColor === "white"
+        );
+      }
+
+      function updateBackgroundColor() {
+        const bgColor =
+          currentBackgroundColor === "black" ? "#000000" : "#ffffff";
+        modelViewer.style.setProperty("--poster-color", bgColor);
+        modelViewer.style.backgroundColor = bgColor;
+
+        // Shadow rootのcanvasにも適用
+        setTimeout(() => {
+          const shadowRoot = modelViewer.shadowRoot;
+          if (shadowRoot) {
+            const canvas = shadowRoot.querySelector("canvas");
+            if (canvas) {
+              canvas.style.backgroundColor = bgColor;
+            }
+          }
+        }, 100);
+      }
+
+      // プリセット設定
+      function setPreset(exposure, shadow) {
+        exposureSlider.value = exposure;
+        shadowSlider.value = shadow;
+        modelViewer.exposure = exposure;
+        modelViewer.shadowIntensity = shadow;
+        exposureValue.textContent = Math.round(exposure * 100);
+        shadowValue.textContent = Math.round(shadow * 100);
+      }
+
+      // サンプルモデル読み込み
+      function loadSampleModel(url) {
+        console.log("Loading model:", url);
+        
+        // URLの検証
+        if (!isValidModelUrl(url)) {
+          showError("Invalid model URL or unsupported file format", url);
+          return;
+        }
+        
+        modelViewer.src = url;
+        customProgressBar.style.display = "flex";
+        clearError();
+      }
+      
+      // モデルURLの検証
+      function isValidModelUrl(url) {
+        try {
+          const urlObj = new URL(url);
+          
+          // プロトコルのチェック
+          if (!['http:', 'https:'].includes(urlObj.protocol)) {
+            console.error("🚨 Invalid protocol. Only HTTP/HTTPS is supported");
+            return false;
+          }
+          
+          // 拡張子チェックは行わない
+          // model-viewerが内部でMIMEタイプやファイル内容を確認する
+          console.log("✅ URL validation passed:", url);
+          
+          return true;
+        } catch (e) {
+          console.error("🚨 Invalid URL:", e);
+          return false;
+        }
+      }
+
+      // メモリ・ストレージ容量をチェック
+      function checkMemoryAndStorage() {
+        const issues = [];
+        const details = {};
+        
+        // 利用可能メモリの推定
+        if (navigator.deviceMemory) {
+          details.deviceMemory = `${navigator.deviceMemory}GB`;
+          if (navigator.deviceMemory < 4) {
+            issues.push(`デバイスメモリが不足している可能性があります (${navigator.deviceMemory}GB)`);
+          }
+        }
+        
+        // ローカルストレージ容量チェック
+        try {
+          const testKey = 'storage_test_' + Date.now();
+          const testData = 'x'.repeat(1024 * 1024); // 1MBのテストデータ
+          localStorage.setItem(testKey, testData);
+          localStorage.removeItem(testKey);
+          
+          // ローカルストレージの使用状況を推定
+          let localStorageSize = 0;
+          for (let key in localStorage) {
+            if (localStorage.hasOwnProperty(key)) {
+              localStorageSize += localStorage[key].length + key.length;
+            }
+          }
+          details.localStorageUsed = `${(localStorageSize / 1024).toFixed(1)}KB`;
+        } catch (e) {
+          if (e.name === 'QuotaExceededError') {
+            issues.push('ローカルストレージの容量が不足しています');
+            details.localStorageStatus = 'FULL';
+          }
+        }
+        
+        // ヒープメモリ使用量チェック（Chrome限定）
+        if (performance.memory) {
+          const usedMB = (performance.memory.usedJSHeapSize / 1024 / 1024).toFixed(1);
+          const limitMB = (performance.memory.jsHeapSizeLimit / 1024 / 1024).toFixed(1);
+          const memoryRatio = performance.memory.usedJSHeapSize / performance.memory.jsHeapSizeLimit;
+          
+          details.jsHeapUsed = `${usedMB}MB / ${limitMB}MB (${(memoryRatio * 100).toFixed(0)}%)`;
+          
+          if (memoryRatio > 0.8) {
+            issues.push(`ブラウザのメモリ使用量が高すぎます (${(memoryRatio * 100).toFixed(0)}%使用中)`);
+          }
+        }
+        
+        // Storage API（使用可能な場合）でディスク容量をチェック
+        if (navigator.storage && navigator.storage.estimate) {
+          navigator.storage.estimate().then(estimate => {
+            const usedMB = (estimate.usage / 1024 / 1024).toFixed(1);
+            const quotaMB = (estimate.quota / 1024 / 1024).toFixed(1);
+            const usagePercent = ((estimate.usage / estimate.quota) * 100).toFixed(0);
+            
+            details.storageEstimate = `${usedMB}MB / ${quotaMB}MB (${usagePercent}%)`;
+            console.log('Storage estimate:', details.storageEstimate);
+          });
+        }
+        
+        return { issues, details };
+      }
+      
+      // ローカルストレージとキャッシュをクリア
+      function clearStorageAndReload() {
+        try {
+          // ローカルストレージクリア
+          localStorage.clear();
+          
+          // セッションストレージクリア
+          sessionStorage.clear();
+          
+          // IndexedDBもクリア（可能であれば）
+          if ('indexedDB' in window) {
+            indexedDB.databases().then(databases => {
+              databases.forEach(db => {
+                indexedDB.deleteDatabase(db.name);
+              });
+            }).catch(() => {
+              console.log('IndexedDB clear failed (may not be supported)');
+            });
+          }
+          
+          // キャッシュAPIクリア（Service Worker使用時）
+          if ('caches' in window) {
+            caches.keys().then(names => {
+              names.forEach(name => {
+                caches.delete(name);
+              });
+            });
+          }
+          
+          console.log('Storage cleared successfully');
+          
+          // 2秒後にページを再読み込み
+          setTimeout(() => {
+            window.location.reload(true);
+          }, 2000);
+          
+          return true;
+        } catch (error) {
+          console.error('Storage clear failed:', error);
+          return false;
+        }
+      }
+
+      // ==========================================
+      // エラー処理モジュール
+      // ==========================================
+      
+      // 環境検出クラス
+      class EnvironmentDetector {
+        constructor() {
+          this.userAgent = navigator.userAgent;
+          this.isMetaMask = this.detectMetaMask();
+          this.isWebView = this.detectWebView();
+          this.platform = this.detectPlatform();
+        }
+        
+        detectMetaMask() {
+          return (window.ethereum && window.ethereum.isMetaMask) || /MetaMask/i.test(this.userAgent);
+        }
+        
+        detectWebView() {
+          if (this.isMetaMask) return true;
+          
+          const webViewPatterns = [
+            /wv/i, /WebView/i, /FBAN|FBAV/i, /Line/i, 
+            /Instagram/i, /Twitter/i
+          ];
+          
+          return webViewPatterns.some(pattern => pattern.test(this.userAgent));
+        }
+        
+        detectPlatform() {
+          const isAndroid = /Android/i.test(this.userAgent);
+          const isIOS = /iPhone|iPad|iPod/i.test(this.userAgent);
+          const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(this.userAgent);
+          
+          return { isAndroid, isIOS, isMobile };
+        }
+      }
+      
+      // エラー分析クラス
+      class ErrorAnalyzer {
+        constructor(environment) {
+          this.environment = environment;
+        }
+        
+        analyze(message, modelUrl) {
+          const errorType = {
+            type: 'unknown',
+            category: 'general',
+            showMemoryInfo: false,
+            solutions: []
+          };
+          
+          const lowerMessage = message.toLowerCase();
+          
+          // CORSエラー
+          if (this.isCorsError(lowerMessage)) {
+            errorType.type = 'cors';
+            errorType.category = 'network';
+            errorType.solutions = [
+              'このモデルのホストサーバーがCORS設定を許可していない可能性があります',
+              'プロキシサービスを経由してアクセスするか、モデルを別のホストに配置してください'
+            ];
+          }
+          // メモリエラー
+          else if (this.isMemoryError(lowerMessage)) {
+            errorType.type = 'memory';
+            errorType.category = 'resource';
+            errorType.showMemoryInfo = true;
+            errorType.solutions = [
+              'モデルファイルが大きすぎる可能性があります',
+              '他のタブを閉じてメモリを解放してください',
+              'より小さいモデルファイルを使用してください'
+            ];
+          }
+          // タイムアウト
+          else if (this.isTimeoutError(lowerMessage)) {
+            errorType.type = 'timeout';
+            errorType.category = 'network';
+            errorType.solutions = [
+              'ネットワーク接続が遅いか不安定な可能性があります',
+              'ファイルサイズが大きすぎる可能性があります'
+            ];
+          }
+          // フォーマットエラー
+          else if (this.isFormatError(lowerMessage)) {
+            errorType.type = 'format';
+            errorType.category = 'file';
+            errorType.solutions = this.getFormatErrorSolutions();
+          }
+          // その他のエラー
+          else {
+            errorType.solutions = this.getGenericSolutions();
+          }
+          
+          return errorType;
+        }
+        
+        isCorsError(message) {
+          return message.includes('cors') || message.includes('cross-origin') || 
+                 message.includes('network error') || message.includes('failed to fetch');
+        }
+        
+        isMemoryError(message) {
+          return message.includes('memory') || message.includes('typed array length') ||
+                 message.includes('out of memory');
+        }
+        
+        isTimeoutError(message) {
+          return message.includes('timeout') || message.includes('timed out');
+        }
+        
+        isFormatError(message) {
+          return message.includes('corrupted') || message.includes('incompatible') ||
+                 message.includes('invalid');
+        }
+        
+        getFormatErrorSolutions() {
+          if (this.environment.isWebView) {
+            return [
+              'このアプリ内ブラウザでは一部の3Dモデルが表示できない場合があります',
+              '標準ブラウザ（Chrome、Safari等）で開くことで正常に表示される可能性があります'
+            ];
+          } else {
+            return [
+              'このブラウザまたはデバイスでは、このモデルの表示に対応していない可能性があります',
+              '別のブラウザやデバイスで試してみてください',
+              'モデルファイルが特殊な形式や機能を使用している可能性があります'
+            ];
+          }
+        }
+        
+        getGenericSolutions() {
+          if (this.environment.isWebView) {
+            return [
+              'アプリ内ブラウザの制限により、3Dモデルを表示できません',
+              '標準ブラウザ（Chrome、Safari等）で開いてください'
+            ];
+          } else {
+            return [
+              'モデルの読み込みに失敗しました',
+              'ネットワーク接続を確認してください',
+              'しばらく待ってから再度お試しください'
+            ];
+          }
+        }
+      }
+      
+      // エラーUI生成クラス
+      class ErrorUIGenerator {
+        constructor(environment) {
+          this.environment = environment;
+        }
+        
+        generateLoadingUI(message) {
+          return `
+            <div class="error-display">
+              <div class="error-icon">⚠️</div>
+              <div class="error-text">
+                <p class="error-title">3D Model Loading Error</p>
+                <p class="error-message">${message}</p>
+                <div style="margin-top: 20px; text-align: center;">
+                  <div class="error-spinner"></div>
+                  <p style="font-size: 14px; color: #666; margin-top: 15px;">
+                    原因を調査中...
+                  </p>
+                </div>
+              </div>
+            </div>
+          `;
+        }
+        
+        generateDetailedUI(message, errorAnalysis, memoryInfo, modelUrl) {
+          const { memoryIssues, memoryDetails } = memoryInfo;
+          
+          return `
+            <div class="error-display">
+              <div class="error-icon">⚠️</div>
+              <div class="error-text">
+                <p class="error-title">3D Model Loading Error</p>
+                <p class="error-message">${message}</p>
+                ${this.generateHelpMessage()}
+                ${this.generateSolutions(errorAnalysis)}
+                ${this.generateSystemInfo(errorAnalysis, memoryIssues, memoryDetails)}
+                ${this.generateStorageActions(memoryIssues)}
+                ${this.generateButtons(errorAnalysis, modelUrl)}
+                ${this.generateAdditionalButtons(memoryIssues)}
+              </div>
+            </div>
+          `;
+        }
+        
+        generateHelpMessage() {
+          if (!this.environment.isWebView) return '';
+          
+          if (this.environment.isMetaMask) {
+            return `
+              <p class="error-message" style="font-size: 12px; color: #888; margin-top: 10px;">MetaMaskブラウザでは3D表示に制限があります。Chrome/Safariなどの標準ブラウザで開いてください。</p>
+              <div class="metamask-hint">
+                ⋯ より「ブラウザで開く」メニューをお試しください
+              </div>
+            `;
+          } else {
+            return '<p class="error-message" style="font-size: 12px; color: #888; margin-top: 10px;">このアプリ内ブラウザでは3D表示に制限があります。標準ブラウザ（Chrome、Safari等）で開いてください。</p>';
+          }
+        }
+        
+        generateSolutions(errorAnalysis) {
+          if (errorAnalysis.solutions.length === 0) return '';
+          
+          return `
+            <div style="margin: 15px 0; padding: 10px; background: rgba(23, 162, 184, 0.1); border-left: 3px solid #17a2b8; border-radius: 4px;">
+              <p style="font-size: 12px; color: #0c5460; margin: 0 0 8px 0;"><strong>考えられる原因と対処法:</strong></p>
+              ${errorAnalysis.solutions.map(solution => `<p style="font-size: 11px; color: #0c5460; margin: 2px 0;">• ${solution}</p>`).join('')}
+            </div>
+          `;
+        }
+        
+        generateSystemInfo(errorAnalysis, memoryIssues, memoryDetails) {
+          if (!errorAnalysis.showMemoryInfo && memoryIssues.length === 0) return '';
+          
+          return `
+            <div style="margin: 15px 0; padding: 10px; background: rgba(108, 117, 125, 0.1); border-left: 3px solid #6c757d; border-radius: 4px;">
+              <p style="font-size: 12px; color: #495057; margin: 0 0 8px 0;"><strong>システム情報:</strong></p>
+              ${memoryDetails.deviceMemory ? `<p style="font-size: 11px; color: #495057; margin: 2px 0;">• デバイスメモリ: ${memoryDetails.deviceMemory}</p>` : ''}
+              ${memoryDetails.jsHeapUsed ? `<p style="font-size: 11px; color: #495057; margin: 2px 0;">• JSヒープ使用量: ${memoryDetails.jsHeapUsed}</p>` : ''}
+              ${memoryDetails.localStorageUsed ? `<p style="font-size: 11px; color: #495057; margin: 2px 0;">• LocalStorage使用量: ${memoryDetails.localStorageUsed}</p>` : ''}
+              ${memoryDetails.localStorageStatus === 'FULL' ? `<p style="font-size: 11px; color: #dc3545; margin: 2px 0;">• LocalStorage: 容量上限に達しています</p>` : ''}
+            </div>
+          `;
+        }
+        
+        generateStorageActions(memoryIssues) {
+          if (memoryIssues.length === 0) return '';
+          
+          return `
+            <div style="margin: 15px 0; padding: 10px; background: rgba(255, 193, 7, 0.1); border-left: 3px solid #ffc107; border-radius: 4px;">
+              <p style="font-size: 12px; color: #856404; margin: 0 0 8px 0;"><strong>検出された問題:</strong></p>
+              ${memoryIssues.map(issue => `<p style="font-size: 11px; color: #856404; margin: 2px 0;">• ${issue}</p>`).join('')}
+            </div>
+            <button onclick="clearStorageAndReload()" class="viewer-link" style="background: #ffc107; color: #000; margin-bottom: 8px;">
+              🗑️ ストレージをクリアして再読み込み
+            </button>
+          `;
+        }
+        
+        generateButtons(errorAnalysis, modelUrl) {
+          if (this.environment.isWebView) {
+            const buttonText = this.environment.isMetaMask 
+              ? '📱 外部ブラウザで開く（Chrome/Safari）'
+              : '📋 URLをコピーして標準ブラウザで開く';
+              
+            return `
+              <button onclick="openInDefaultBrowser('${modelUrl}')" class="viewer-link">
+                ${buttonText}
+              </button>
+            `;
+          } else {
+            if (errorAnalysis.type === 'cors' || errorAnalysis.type === 'network') {
+              return `
+                <button onclick="window.location.reload()" class="viewer-link">
+                  🔄 再試行
+                </button>
+                <button onclick="window.location.href=window.location.pathname" class="viewer-link" style="background: #6c757d; margin-left: 5px;">
+                  🏠 ホームに戻る
+                </button>
+              `;
+            } else {
+              return `
+                <button onclick="window.location.reload()" class="viewer-link">
+                  🔄 ページを再読み込み
+                </button>
+              `;
+            }
+          }
+        }
+        
+        generateAdditionalButtons(memoryIssues) {
+          if (!this.environment.isWebView && memoryIssues.length > 0) {
+            return `<button onclick="clearStorageAndReload()" class="viewer-link" style="background: #6c757d; margin-top: 5px;">
+              🏠 ストレージクリア後ホームに戻る
+            </button>`;
+          }
+          return '';
+        }
+      }
+      
+      // エラーの種類を判別（互換性のため残す - 削除予定）
+      function analyzeErrorType(message, modelUrl) {
+        const environment = new EnvironmentDetector();
+        const analyzer = new ErrorAnalyzer(environment);
+        return analyzer.analyze(message, modelUrl);
+      }
+      
+      // 古いanalyzeErrorType実装（参考用にコメント化）
+      /*
+      function analyzeErrorType_OLD(message, modelUrl) {
+        const errorType = {
+          type: 'unknown',
+          category: 'general',
+          showMemoryInfo: false,
+          solutions: []
+        };
+        
+        const lowerMessage = message.toLowerCase();
+        const isInWebView = detectWebView();
+        
+        // CORSエラー
+        if (lowerMessage.includes('cors') || lowerMessage.includes('cross-origin') || 
+            lowerMessage.includes('network error') || lowerMessage.includes('failed to fetch')) {
+          errorType.type = 'cors';
+          errorType.category = 'network';
+          errorType.solutions = [
+            'このモデルのホストサーバーがCORS設定を許可していない可能性があります',
+            'プロキシサービスを経由してアクセスするか、モデルを別のホストに配置してください'
+          ];
+        }
+        // メモリエラー
+        else if (lowerMessage.includes('memory') || lowerMessage.includes('typed array length') ||
+                 lowerMessage.includes('out of memory')) {
+          errorType.type = 'memory';
+          errorType.category = 'resource';
+          errorType.showMemoryInfo = true;
+          errorType.solutions = [
+            'モデルファイルが大きすぎる可能性があります',
+            '他のタブを閉じてメモリを解放してください',
+            'より小さいモデルファイルを使用してください'
+          ];
+        }
+        // タイムアウト
+        else if (lowerMessage.includes('timeout') || lowerMessage.includes('timed out')) {
+          errorType.type = 'timeout';
+          errorType.category = 'network';
+          errorType.solutions = [
+            'ネットワーク接続が遅いか不安定な可能性があります',
+            'ファイルサイズが大きすぎる可能性があります'
+          ];
+        }
+        // フォーマットエラー（WebView環境を考慮）
+        else if (lowerMessage.includes('corrupted') || lowerMessage.includes('incompatible') ||
+                 lowerMessage.includes('invalid')) {
+          errorType.type = 'format';
+          errorType.category = 'file';
+          
+          // WebView環境の場合は別のメッセージ
+          if (isInWebView) {
+            errorType.solutions = [
+              'このアプリ内ブラウザでは一部の3Dモデルが表示できない場合があります',
+              '標準ブラウザ（Chrome、Safari等）で開くことで正常に表示される可能性があります'
+            ];
+          } else {
+            errorType.solutions = [
+              'このブラウザまたはデバイスでは、このモデルの表示に対応していない可能性があります',
+              '別のブラウザやデバイスで試してみてください',
+              'モデルファイルが特殊な形式や機能を使用している可能性があります'
+            ];
+          }
+        }
+        // テクスチャエラー
+        else if (lowerMessage.includes('texture')) {
+          errorType.type = 'texture';
+          errorType.category = 'file';
+          errorType.solutions = [
+            'モデルのテクスチャファイルが見つからないか読み込めません',
+            'テクスチャファイルがモデルと同じ場所にあることを確認してください'
+          ];
+        }
+        // WebGLエラー
+        else if (lowerMessage.includes('webgl') || lowerMessage.includes('context')) {
+          errorType.type = 'webgl';
+          errorType.category = 'browser';
+          errorType.solutions = [
+            'ブラウザのWebGL機能が無効になっているか、サポートされていません',
+            'ブラウザの設定でハードウェアアクセラレーションを有効にしてください'
+          ];
+        }
+        // 一般的なロードエラー（WebView環境を考慮）
+        else if (lowerMessage.includes('failed to load') || lowerMessage.includes('loading failed')) {
+          errorType.type = 'load';
+          errorType.category = 'general';
+          
+          if (isInWebView) {
+            errorType.solutions = [
+              'アプリ内ブラウザの制限により、3Dモデルを表示できません',
+              '標準ブラウザ（Chrome、Safari等）で開いてください'
+            ];
+          } else {
+            errorType.solutions = [
+              'モデルの読み込みに失敗しました',
+              'ネットワーク接続を確認してください',
+              'しばらく待ってから再度お試しください'
+            ];
+          }
+        }
+        
+        return errorType;
+      }
+      */
+
+      // エラー表示（シンプル化）
+      function showError(message, modelUrl) {
+        const container = document.querySelector(".container");
+        const environment = new EnvironmentDetector();
+        const uiGenerator = new ErrorUIGenerator(environment);
+        
+        // まず原因調査中の表示を出す
+        container.innerHTML = uiGenerator.generateLoadingUI(message);
+        
+        // 少し遅延を入れて原因調査を実行
+        setTimeout(() => {
+          // 環境とエラーの分析
+          const errorAnalyzer = new ErrorAnalyzer(environment);
+          const errorAnalysis = errorAnalyzer.analyze(message, modelUrl);
+          
+          // メモリ情報の取得
+          const memoryCheck = checkMemoryAndStorage();
+          const memoryInfo = {
+            memoryIssues: memoryCheck.issues,
+            memoryDetails: memoryCheck.details
+          };
+          
+          // 詳細UIの生成と表示
+          container.innerHTML = uiGenerator.generateDetailedUI(
+            message,
+            errorAnalysis,
+            memoryInfo,
+            modelUrl
+          );
+        }, 1500); // 1.5秒後に詳細情報を表示
+      }
+
+      function clearError() {
+        // エラー表示をクリア（必要に応じて実装）
+      }
+
+      // WebView環境の検出（互換性のため残す）
+      function detectWebView() {
+        const detector = new EnvironmentDetector();
+        return detector.isWebView;
+      }
+      
+      // MetaMaskブラウザかどうかを判定（互換性のため残す）
+      function isMetaMaskBrowser() {
+        const detector = new EnvironmentDetector();
+        return detector.isMetaMask;
+      }
+
+      // 標準ブラウザでURLを開く
+      function openInDefaultBrowser(modelUrl) {
+        const currentUrl = window.location.href;
+        const baseUrl = currentUrl.split('?')[0];
+        const fullUrl = `${baseUrl}?src=${encodeURIComponent(modelUrl)}`;
+        
+        console.log('Attempting to open in default browser:', fullUrl);
+        
+        // MetaMaskブラウザの場合の特別処理
+        if (isMetaMaskBrowser()) {
+          // モバイルOSの判定
+          const isAndroid = /Android/i.test(navigator.userAgent);
+          const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
+          
+          if (isAndroid) {
+            // Androidの場合：まずクリップボードにコピーを試行
+            copyToClipboard(fullUrl).then((copySuccess) => {
+              // Chrome起動を試行
+              const intentUrl = `intent://${fullUrl.replace(/^https?:\/\//, '')}#Intent;scheme=https;package=com.android.chrome;end`;
+              window.location.href = intentUrl;
+              
+              // 1.5秒後にフォールバック処理
+              setTimeout(() => {
+                if (copySuccess) {
+                  alert(`URLをクリップボードにコピーしました。\n\n自動でChrome/標準ブラウザが開かない場合は、手動にてブラウザのURL欄にペーストしてください。\n\nコピー済みのURL:\n${fullUrl}`);
+                } else {
+                  alert(`URLのコピーに失敗しました。\n\n以下のURLを手動でコピーしてブラウザで開いてください：\n${fullUrl}`);
+                }
+              }, 1500);
+            });
+          } else if (isIOS) {
+            // iOSの場合：まずクリップボードにコピーを試行
+            copyToClipboard(fullUrl).then((copySuccess) => {
+              // Chrome起動を試行
+              const chromeUrl = `googlechrome-x-callback://x-callback-url/open/?url=${encodeURIComponent(fullUrl)}`;
+              window.location.href = chromeUrl;
+              
+              // 1.5秒後にフォールバック処理
+              setTimeout(() => {
+                if (copySuccess) {
+                  alert(`URLをクリップボードにコピーしました。\n\n自動でChrome/Safariが開かない場合、手動にてブラウザのURL欄にペーストしてください。\n\nコピー済みのURL:\n${fullUrl}`);
+                } else {
+                  alert(`URLのコピーに失敗しました。\n\n以下のURLを手動でコピーしてブラウザで開いてください：\n${fullUrl}`);
+                }
+              }, 1500);
+            });
+          } else {
+            // デスクトップMetaMask
+            copyToClipboard(fullUrl).then((copySuccess) => {
+              if (copySuccess) {
+                alert(`URLをクリップボードにコピーしました。\n標準ブラウザで貼り付けて開いてください。\n\nコピー済みのURL:\n${fullUrl}`);
+              } else {
+                const userChoice = confirm(
+                  'URLのコピーに失敗しました。\n\n' +
+                  '以下の方法で対処できます：\n' +
+                  '• OK: URLを表示してマニュアルコピー\n' +
+                  '• キャンセル: 前のページに戻る'
+                );
+                
+                if (userChoice) {
+                  prompt('以下のURLを手動でコピーしてください:', fullUrl);
+                } else {
+                  history.back();
+                }
+              }
+            });
+          }
+          return;
+        }
+        
+        // モバイル環境の判定
+        const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+        const isAndroid = /Android/i.test(navigator.userAgent);
+        const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
+        
+        // 1. Androidの場合、インテントURLを試行
+        if (isAndroid && !isMetaMaskBrowser()) {
+          const intentUrl = `intent://${fullUrl.replace(/^https?:\/\//, '')}#Intent;action=android.intent.action.VIEW;scheme=https;end`;
+          window.location.href = intentUrl;
+          
+          // フォールバック: 3秒後にクリップボードコピー
+          setTimeout(() => {
+            copyToClipboardAndNotify(fullUrl);
+          }, 3000);
+          return;
+        }
+        
+        // 2. iOSの場合、window.openを試行
+        if (isIOS && !isMetaMaskBrowser()) {
+          const newWindow = window.open(fullUrl, '_blank');
+          if (!newWindow || newWindow.closed || typeof newWindow.closed == 'undefined') {
+            // ポップアップがブロックされた場合
+            copyToClipboardAndNotify(fullUrl);
+          }
+          return;
+        }
+        
+        // 3. デスクトップまたはその他の環境
+        try {
+          // 新しいタブで開く
+          const newWindow = window.open(fullUrl, '_blank');
+          if (!newWindow || newWindow.closed || typeof newWindow.closed == 'undefined') {
+            // ポップアップがブロックされた場合
+            copyToClipboardAndNotify(fullUrl);
+          }
+        } catch (e) {
+          // エラーの場合はクリップボードにコピー
+          copyToClipboardAndNotify(fullUrl);
+        }
+      }
+      
+      // クリップボードにコピー（Promise版 - 成功/失敗を返す）
+      function copyToClipboard(url) {
+        return new Promise((resolve) => {
+          if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(url)
+              .then(() => {
+                console.log('Copied using Clipboard API');
+                resolve(true);
+              })
+              .catch(() => {
+                console.log('Clipboard API failed, trying fallback');
+                resolve(fallbackCopyToClipboard(url));
+              });
+          } else {
+            resolve(fallbackCopyToClipboard(url));
+          }
+        });
+      }
+      
+      // フォールバックコピー（成功/失敗を返す）
+      function fallbackCopyToClipboard(url) {
+        try {
+          const textArea = document.createElement('textarea');
+          textArea.value = url;
+          textArea.style.position = 'fixed';
+          textArea.style.left = '-999999px';
+          document.body.appendChild(textArea);
+          textArea.focus();
+          textArea.select();
+          
+          const successful = document.execCommand('copy');
+          document.body.removeChild(textArea);
+          
+          if (successful) {
+            console.log('Copied using execCommand');
+            return true;
+          } else {
+            console.log('execCommand failed');
+            return false;
+          }
+        } catch (error) {
+          console.log('execCommand error:', error);
+          return false;
+        }
+      }
+
+      // クリップボードにコピーしてユーザーに通知（レガシー関数）
+      function copyToClipboardAndNotify(url) {
+        console.log('Copying to clipboard:', url);
+        
+        copyToClipboard(url).then((success) => {
+          if (success) {
+            alert(`URLをクリップボードにコピーしました！\n標準ブラウザ（Chrome、Safari等）で貼り付けて開いてください。\n\nコピーされたURL:\n${url}`);
+          } else {
+            const userChoice = confirm(
+              '自動コピーに失敗しました。\n\n' +
+              '以下の方法で対処できます：\n' +
+              '• OK: URLを表示してマニュアルコピー\n' +
+              '• キャンセル: 前のページに戻る'
+            );
+            
+            if (userChoice) {
+              prompt('以下のURLを手動でコピーしてください:', url);
+            } else {
+              history.back();
+            }
+          }
+        });
+      }
+
+      // フォールバック方法でクリップボードにコピー
+      function fallbackCopyToClipboard(url) {
+        try {
+          // 方法1: document.execCommand（古いブラウザ対応）
+          const textArea = document.createElement('textarea');
+          textArea.value = url;
+          textArea.style.position = 'fixed';
+          textArea.style.left = '-999999px';
+          textArea.style.top = '-999999px';
+          document.body.appendChild(textArea);
+          textArea.select();
+          textArea.setSelectionRange(0, 99999);
+          
+          const successful = document.execCommand('copy');
+          document.body.removeChild(textArea);
+          
+          if (successful) {
+            console.log('Copied using execCommand');
+            showCopySuccessAlert(url);
+          } else {
+            console.log('execCommand failed, showing prompt');
+            showManualCopyPrompt(url);
+          }
+        } catch (error) {
+          console.log('execCommand error:', error);
+          showManualCopyPrompt(url);
+        }
+      }
+
+      // コピー成功時のアラート表示
+      function showCopySuccessAlert(url) {
+        alert(`URLをクリップボードにコピーしました！\n標準ブラウザ（Chrome、Safari等）で貼り付けて開いてください。\n\nコピーされたURL:\n${url}`);
+      }
+
+      // 手動コピー用のプロンプト表示（無限ループ防止）
+      function showManualCopyPrompt(url) {
+        const userChoice = confirm(
+          '自動コピーに失敗しました。\n\n' +
+          '以下の方法で対処できます：\n' +
+          '• OK: URLを表示してマニュアルコピー\n' +
+          '• キャンセル: そのまま終了\n\n' +
+          'URL: ' + url
+        );
+        
+        if (userChoice) {
+          // URLを表示するだけで、再試行はしない
+          alert(
+            'URLをコピーして標準ブラウザで開いてください：\n\n' + url + 
+            '\n\n※このURLを選択してコピー（Ctrl+C / Cmd+C）してください'
+          );
+        }
+      }
+
+      // シンプルな裏面グレー着色機能
+      function addBackfaceColorSimple() {
+        console.log("🎯 Starting backface gray coloring...");
+
+        // モデル読み込み完了まで少し待つ
+        setTimeout(() => {
+          console.log("Checking model availability...");
+          console.log("modelViewer.model:", modelViewer.model);
+          console.log("modelViewer properties:", Object.keys(modelViewer));
+          
+          // 複数の方法でモデルにアクセス
+          let model = null;
+          
+          if (modelViewer.model) {
+            model = modelViewer.model;
+            console.log("✓ Found model via modelViewer.model");
+          } else {
+            // model-viewerの内部を探索
+            console.log("⚠️ modelViewer.model not available, searching alternatives...");
+            
+            // Shadow DOMから探す
+            const shadowRoot = modelViewer.shadowRoot;
+            if (shadowRoot) {
+              console.log("Found shadow root, searching for Three.js scene...");
+              
+              // 可能性のある内部プロパティを探す
+              for (let key in modelViewer) {
+                try {
+                  const value = modelViewer[key];
+                  if (value && typeof value === 'object') {
+                    console.log(`Checking modelViewer.${key}:`, typeof value, value?.constructor?.name);
+                    
+                    if (value.scene || value.model || (value.children && value.traverse)) {
+                      model = value;
+                      console.log(`✓ Found model via modelViewer.${key}`);
+                      break;
+                    }
+                  }
+                } catch (e) {
+                  // アクセスエラーは無視
+                }
+              }
+            }
+          }
+          
+          if (model) {
+            processModelForBackface(model);
+          } else {
+            console.log("❌ No model found, retrying in 2 seconds...");
+            setTimeout(() => addBackfaceColorSimple(), 2000);
+          }
+        }, 500);
+      }
+
+      // モデルの裏面をグレーに着色
+      function processModelForBackface(model) {
+        console.log("Processing model for backface gray coloring...");
+        console.log("Model object:", model);
+        console.log("Model properties:", Object.keys(model));
+        console.log("Model constructor:", model.constructor.name);
+        
+        let scene = null;
+        
+        // より詳細にシーンを探す
+        if (model.scene && typeof model.scene.traverse === 'function') {
+          scene = model.scene;
+          console.log("✓ Found scene via model.scene");
+        } else if (model.children && typeof model.traverse === 'function') {
+          scene = model;
+          console.log("✓ Using model directly as scene");
+        } else {
+          console.log("⚠️ Standard scene access failed, searching deeper...");
+          
+          // Symbolプロパティを探索
+          const symbols = Object.getOwnPropertySymbols(model);
+          console.log(`Found ${symbols.length} symbol properties:`, symbols.map(s => s.toString()));
+          
+          for (let symbol of symbols) {
+            try {
+              const value = model[symbol];
+              console.log(`Checking model[${symbol.toString()}]:`, typeof value, value?.constructor?.name);
+              
+              if (value && typeof value === 'object' && value.traverse && typeof value.traverse === 'function') {
+                scene = value;
+                console.log(`✓ Found scene via model[${symbol.toString()}]`);
+                break;
+              }
+              
+              // 配列の場合、各要素をチェック
+              if (Array.isArray(value)) {
+                console.log(`  Array with ${value.length} elements`);
+                for (let i = 0; i < value.length; i++) {
+                  const element = value[i];
+                  console.log(`    Element [${i}]:`, typeof element, element?.constructor?.name);
+                  
+                  if (element && typeof element === 'object') {
+                    // 要素の詳細を表示
+                    console.log(`    Element [${i}] keys:`, Object.keys(element));
+                    console.log(`    Element [${i}] symbols:`, Object.getOwnPropertySymbols(element).map(s => s.toString()));
+                    
+                    // traverseメソッドを持つか確認
+                    if (element.traverse && typeof element.traverse === 'function') {
+                      scene = element;
+                      console.log(`✓ Found scene via model[${symbol.toString()}][${i}]`);
+                      break;
+                    }
+                    
+                    // Three.jsのシーンオブジェクトを探す
+                    if (element.scene && element.scene.traverse) {
+                      scene = element.scene;
+                      console.log(`✓ Found scene via model[${symbol.toString()}][${i}].scene`);
+                      break;
+                    }
+                    
+                    // 一般的なThree.jsオブジェクトのプロパティをチェック
+                    const threeJsProps = ['children', 'parent', 'geometry', 'material', 'matrix', 'position', 'rotation', 'scale'];
+                    for (let prop of threeJsProps) {
+                      if (element[prop] !== undefined) {
+                        console.log(`    Element [${i}] has Three.js property: ${prop}`);
+                        
+                        // childrenプロパティがあり、traverseメソッドもある場合
+                        if (prop === 'children' && element.traverse && typeof element.traverse === 'function') {
+                          scene = element;
+                          console.log(`✓ Found Three.js object with traverse via model[${symbol.toString()}][${i}]`);
+                          break;
+                        }
+                      }
+                    }
+                    if (scene) break;
+                    
+                    // 要素のプロパティも再帰的に探す
+                    for (let key in element) {
+                      try {
+                        const nestedValue = element[key];
+                        if (nestedValue && typeof nestedValue === 'object' && nestedValue.traverse && typeof nestedValue.traverse === 'function') {
+                          scene = nestedValue;
+                          console.log(`✓ Found scene via model[${symbol.toString()}][${i}].${key}`);
+                          break;
+                        }
+                      } catch (e) {
+                        // アクセスエラーは無視
+                      }
+                    }
+                    if (scene) break;
+                  }
+                }
+                if (scene) break;
+              }
+              
+              // ネストしたオブジェクトも探す
+              if (value && typeof value === 'object') {
+                // 通常のプロパティ
+                for (let nestedKey in value) {
+                  try {
+                    const nestedValue = value[nestedKey];
+                    if (nestedValue && typeof nestedValue === 'object' && nestedValue.traverse && typeof nestedValue.traverse === 'function') {
+                      scene = nestedValue;
+                      console.log(`✓ Found scene via model[${symbol.toString()}].${nestedKey}`);
+                      break;
+                    }
+                  } catch (e) {
+                    // アクセスエラーは無視
+                  }
+                }
+                if (scene) break;
+                
+                // Symbolプロパティも探す
+                const nestedSymbols = Object.getOwnPropertySymbols(value);
+                for (let nestedSymbol of nestedSymbols) {
+                  try {
+                    const nestedValue = value[nestedSymbol];
+                    if (nestedValue && typeof nestedValue === 'object' && nestedValue.traverse && typeof nestedValue.traverse === 'function') {
+                      scene = nestedValue;
+                      console.log(`✓ Found scene via model[${symbol.toString()}][${nestedSymbol.toString()}]`);
+                      break;
+                    }
+                  } catch (e) {
+                    // アクセスエラーは無視
+                  }
+                }
+                if (scene) break;
+              }
+            } catch (e) {
+              console.log(`Cannot access model[${symbol.toString()}]:`, e.message);
+            }
+          }
+          
+          if (!scene) {
+            console.log("❌ No traversable scene found after symbol search");
+            return;
+          }
+        }
+
+        let meshCount = 0;
+        scene.traverse((node) => {
+          if (node.isMesh && node.material) {
+            meshCount++;
+            console.log(`Processing mesh ${meshCount}: ${node.name || 'unnamed'}`);
+
+            const materials = Array.isArray(node.material) ? node.material : [node.material];
+            
+            materials.forEach((material, index) => {
+              if (material) {
+                console.log(`  Modifying material ${index}: ${material.type}`);
+                
+                // 元のマテリアルを保存
+                const originalSide = material.side;
+                const originalOnBeforeCompile = material.onBeforeCompile;
+                
+                // 両面表示を強制的に有効化
+                material.side = 2; // THREE.DoubleSide
+                
+                // 透明度とカリング設定
+                if (material.transparent === undefined) {
+                  material.transparent = false;
+                }
+                
+                // シェーダー修正で裏面をグレーに（確実版）
+                material.onBeforeCompile = function (shader) {
+                  console.log(`  Compiling shader for material ${index}`);
+                  console.log(`  Original fragment shader length: ${shader.fragmentShader.length}`);
+                  
+                  // 元のコンパイラも実行
+                  if (originalOnBeforeCompile && typeof originalOnBeforeCompile === 'function') {
+                    originalOnBeforeCompile.call(this, shader);
+                  }
+                  
+                  // 確実にgl_FrontFacingチェックを追加
+                  const backfaceCode = `
+                    if (!gl_FrontFacing) {
+                      gl_FragColor = vec4(0.07, 0.05, 0.05, 1.0);
+                    }
+                  `;
+                  
+                  // 複数の挿入ポイントを試行
+                  let modified = false;
+                  
+                  // 1. output_fragment の後
+                  if (shader.fragmentShader.includes('#include <output_fragment>')) {
+                    shader.fragmentShader = shader.fragmentShader.replace(
+                      /#include <output_fragment>/g,
+                      `#include <output_fragment>\n${backfaceCode}`
+                    );
+                    modified = true;
+                    console.log(`  ✓ Applied after output_fragment`);
+                  }
+                  
+                  // 2. main関数の最後
+                  if (!modified && shader.fragmentShader.includes('void main()')) {
+                    shader.fragmentShader = shader.fragmentShader.replace(
+                      /(void\s+main\s*\(\s*\)\s*{[\s\S]*?)(\s*}\s*)$/,
+                      `$1${backfaceCode}$2`
+                    );
+                    modified = true;
+                    console.log(`  ✓ Applied at end of main()`);
+                  }
+                  
+                  // 3. 最終手段：シェーダーの最後
+                  if (!modified) {
+                    shader.fragmentShader = shader.fragmentShader.replace(
+                      /}\s*$/,
+                      `${backfaceCode}\n}`
+                    );
+                    console.log(`  ✓ Applied at shader end (forced)`);
+                  }
+                  
+                  console.log(`  Modified fragment shader length: ${shader.fragmentShader.length}`);
+                  
+                  // デバッグ用：修正されたシェーダーの一部を表示
+                  const lines = shader.fragmentShader.split('\n');
+                  console.log(`  Last 5 lines of shader:`, lines.slice(-5));
+                };
+                
+                material.needsUpdate = true;
+                console.log(`  ✓ Material ${index} processed for gray backface (enhanced)`);
+              }
+            });
+          }
+        });
+
+        console.log(`✅ Processed ${meshCount} meshes with gray backface coloring`);
+      }
+
+      // URLパラメータからモデルURLを取得
+      function getModelUrlFromParams() {
+        const urlParams = new URLSearchParams(window.location.search);
+        return urlParams.get("src");
+      }
+
+      // ブラウザの自動リロードを防止
+      window.addEventListener('beforeunload', (event) => {
+        console.log("🚨 Page unload detected - checking if intentional...");
+        
+        // メモリ不足などでの意図しないリロードを検出
+        if (performance.memory) {
+          const memoryRatio = performance.memory.usedJSHeapSize / performance.memory.jsHeapSizeLimit;
+          if (memoryRatio > 0.9) {
+            console.error("🚨 High memory usage detected during unload:", memoryRatio);
+            // ストレージをクリアしてから再読み込み
+            localStorage.clear();
+            sessionStorage.clear();
+          }
+        }
+      });
+
+      // エラー時の自動リロードを防止
+      window.addEventListener('error', (event) => {
+        console.error("🚨 Global error detected:", event.error);
+        if (event.error && event.error.message) {
+          if (event.error.message.includes('memory') || 
+              event.error.message.includes('quota') ||
+              event.error.message.includes('storage')) {
+            console.error("🚨 Memory/Storage error - preventing automatic reload");
+            event.preventDefault();
+            showError("Memory or storage error detected", modelViewer.src || "unknown");
+          }
+        }
+      });
+
+      // 初期化
+      document.addEventListener("DOMContentLoaded", () => {
+        console.log("🚀 Page loaded, initializing...");
+        updateBackgroundColor();
+        
+        // 最大化ボタンのhrefを現在のURLで更新
+        const maximizeButton = document.getElementById("maximizeButton");
+        if (maximizeButton) {
+          maximizeButton.href = window.location.href;
+        }
+
+        // URLパラメータにモデルURLがあれば読み込み
+        const modelUrl = getModelUrlFromParams();
+        if (modelUrl) {
+          console.log("📥 Loading model from URL parameter:", modelUrl);
+          loadSampleModel(modelUrl);
+        } else {
+          console.log("🔍 No URL parameter, checking default model...");
+          // default.glbが存在しない場合のフォールバック
+          checkDefaultModel();
+        }
+        
+        // 5分後に強制的にエラー画面を表示（デバッグ用）
+        setTimeout(() => {
+          if (!modelViewer.model && customProgressBar.style.display !== "none") {
+            console.error("🚨 Force timeout after 5 minutes");
+            showError("Loading took too long - please try again", modelViewer.src || "unknown");
+          }
+        }, 300000);
+      });
+
+      // default.glbの存在チェック
+      async function checkDefaultModel() {
+        try {
+          const response = await fetch("./default.glb", { method: "HEAD" });
+          if (response.ok) {
+            // default.glbが存在する場合
+            console.log("Loading default.glb");
+            modelViewer.src = "./default.glb";
+          } else {
+            // default.glbが存在しない場合、Arweaveのモデルを使用
+            console.log("default.glb not found, using fallback model");
+            modelViewer.src =
+              "https://arweave.net/ZFDOSKBnBnAlHx4olZjFEAQpPgO0UigLHrzXw-bds6k";
+          }
+        } catch (error) {
+          // ネットワークエラーまたはファイルが存在しない場合
+          console.log("default.glb not accessible, using fallback model");
+          modelViewer.src =
+            "https://arweave.net/ZFDOSKBnBnAlHx4olZjFEAQpPgO0UigLHrzXw-bds6k";
+        }
+      }
+
+      // 外部クリックでコントロールパネルを閉じる
+      document.addEventListener("click", (e) => {
+        if (
+          !lightControls.contains(e.target) &&
+          !lightControlButton.contains(e.target)
+        ) {
+          if (showControls) {
+            showControls = false;
+            lightControls.style.display = "none";
+          }
+        }
+      });
+    </script>
+  </body>
+</html>
