@@ -32,8 +32,8 @@ bizen.sbs はモノリシックな構成で、分散型コミュニティでの�
 | NFT (ERC-721) | 宝山窯 | `0xd84d7A7FE688a1CC40a931cab2aaF189eB3ceEcB` |
 | NFT (ERC-721) | 藤田 祥 | `0x6C8b4094809CE7e5Ec1a44F7553Cf51b969C2aEb` |
 | SBT | メンバーシップ | `0xFcC45d28E7e51Cff6d8181Bd73023d46daf1fEd2` |
-| TBA Registry | ERC-6551 | `0xa8a05744C04c7AD0D31Fcee368aC18040832F1c1` |
-| TBA Implementation | ERC-6551 | `0x63c8A3536E4A647D48fC0076D442e3243f7e773b` |
+| TBA Registry | ERC-6551 v0.2.0 | `0x63c8A3536E4A647D48fC0076D442e3243f7e773b` |
+| TBA Implementation | ERC-6551 v0.2.0 | `0xa8a05744C04c7AD0D31Fcee368aC18040832F1c1` |
 | Donation | treasury | `0x94280C465Be5C49B02b779Fd02d344815cb937d6` |
 
 ※ `0x72A02d...8623` は旧コントラクト。使用しない。
@@ -314,16 +314,17 @@ token.html?ca=0x...&id=1
                   └── NFT → 「所有NFT」セクション
 ```
 
-### ERC-6551 Registry ABI（必要部分）
+### ERC-6551 v0.2.0 Registry ABI（必要部分）
 
 ```javascript
 // account() — TBAアドレスを算出（viewのみ、ガス不要）
+// ※ v0.2.0は引数順がv0.3.0と異なる。saltはuint256。
 function account(
-  address implementation,  // 0x63c8A3...773b
-  bytes32 salt,           // 0x0
+  address implementation,  // 0xa8a057...1c1
   uint256 chainId,        // 137
   address tokenContract,  // NFTコントラクト
-  uint256 tokenId         // トークンID
+  uint256 tokenId,        // トークンID
+  uint256 salt            // 0
 ) external view returns (address)
 ```
 

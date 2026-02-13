@@ -8,7 +8,7 @@
     <!-- 既存のCSS -->
     <link rel="stylesheet" href="css/style.css" />
 
-    <!-- Web3.js CDN - ethers.jsの代替 -->
+    <!-- Web3.js CDN -->
     <script
       src="https://cdn.jsdelivr.net/npm/web3@1.10.0/dist/web3.min.js"
       crossorigin="anonymous"
@@ -20,11 +20,15 @@
       crossorigin="anonymous"
     ></script>
 
-    <!-- Vue 3 CDN - 最後に読み込む -->
+    <!-- Vue 3 CDN -->
     <script
       src="https://unpkg.com/vue@3/dist/vue.global.js"
       crossorigin="anonymous"
     ></script>
+
+    <!-- BizenDAO 共通モジュール -->
+    <script src="js/config.js"></script>
+    <script src="js/nft.js"></script>
 
     <style>
       /* NFTビューア固有のスタイル */
@@ -351,6 +355,139 @@
         }
       }
 
+      /* TBAセクション */
+      .tba-section {
+        margin-top: 40px;
+        background: rgba(255, 255, 255, 0.03);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 16px;
+        padding: 30px;
+      }
+
+      .tba-header {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 24px;
+        padding-bottom: 16px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      }
+
+      .tba-header h3 {
+        font-size: 20px;
+        margin: 0;
+      }
+
+      .tba-address {
+        font-family: monospace;
+        font-size: 13px;
+        opacity: 0.6;
+      }
+
+      .tba-address a {
+        color: #6bb6ff;
+        text-decoration: none;
+      }
+
+      .tba-address a:hover {
+        text-decoration: underline;
+      }
+
+      .tba-loading {
+        text-align: center;
+        padding: 20px;
+        opacity: 0.6;
+      }
+
+      .tba-empty {
+        text-align: center;
+        padding: 20px;
+        opacity: 0.5;
+        font-style: italic;
+      }
+
+      .tba-subsection {
+        margin-bottom: 24px;
+      }
+
+      .tba-subsection:last-child {
+        margin-bottom: 0;
+      }
+
+      .tba-subsection h4 {
+        font-size: 16px;
+        margin-bottom: 16px;
+        opacity: 0.8;
+      }
+
+      .tba-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+        gap: 16px;
+      }
+
+      .tba-card {
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 12px;
+        overflow: hidden;
+        transition: all 0.3s ease;
+        cursor: pointer;
+        text-decoration: none;
+        color: inherit;
+        display: block;
+      }
+
+      .tba-card:hover {
+        border-color: rgba(255, 255, 255, 0.3);
+        transform: translateY(-2px);
+      }
+
+      .tba-card-image {
+        width: 100%;
+        aspect-ratio: 1;
+        object-fit: cover;
+        background: rgba(0, 0, 0, 0.2);
+      }
+
+      .tba-card-info {
+        padding: 12px;
+      }
+
+      .tba-card-name {
+        font-size: 14px;
+        font-weight: 600;
+        margin-bottom: 4px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      .tba-card-artist {
+        font-size: 12px;
+        opacity: 0.6;
+      }
+
+      .tba-card-type {
+        display: inline-block;
+        font-size: 11px;
+        padding: 2px 8px;
+        border-radius: 4px;
+        margin-top: 6px;
+      }
+
+      .tba-card-type.sbt {
+        background: rgba(255, 200, 50, 0.15);
+        color: #ffcc44;
+        border: 1px solid rgba(255, 200, 50, 0.3);
+      }
+
+      .tba-card-type.nft {
+        background: rgba(100, 180, 255, 0.15);
+        color: #6bb6ff;
+        border: 1px solid rgba(100, 180, 255, 0.3);
+      }
+
       /* フェードアニメーション */
       .fade-enter-active,
       .fade-leave-active {
@@ -543,6 +680,67 @@
             </div>
           </div>
 
+          <!-- TBA (Token Bound Account) セクション -->
+          <div v-if="nfts.length > 0" class="tba-section">
+            <div class="tba-header">
+              <h3>📦 Token Bound Account</h3>
+              <div v-if="tbaAddress" class="tba-address">
+                <a :href="polygonscanAddress(tbaAddress)" target="_blank">{{ shortAddr(tbaAddress) }}</a>
+              </div>
+            </div>
+
+            <div v-if="tbaLoading" class="tba-loading">
+              <div class="loading-spinner"></div>
+              <p>TBA内のアセットを取得中...</p>
+            </div>
+
+            <div v-else-if="!tbaAddress" class="tba-empty">
+              TBAアドレスを取得できませんでした
+            </div>
+
+            <div v-else-if="tbaAssets.length === 0" class="tba-empty">
+              この作品のTBAにはまだアセットがありません
+            </div>
+
+            <template v-else>
+              <!-- 箱書き（SBT） -->
+              <div v-if="tbaSbtAssets.length > 0" class="tba-subsection">
+                <h4>📜 箱書き（SBT）</h4>
+                <div class="tba-grid">
+                  <a v-for="asset in tbaSbtAssets" :key="asset.contractAddress + '-' + asset.tokenId"
+                     :href="'token.html?ca=' + asset.contractAddress + '&id=' + asset.tokenId"
+                     class="tba-card">
+                    <img v-if="asset.metadata.image" :src="asset.metadata.image" :alt="asset.metadata.name"
+                         class="tba-card-image" @error="handleImageError" />
+                    <div class="tba-card-info">
+                      <div class="tba-card-name">{{ asset.metadata.name }}</div>
+                      <div class="tba-card-artist">{{ asset.artistName }}</div>
+                      <span class="tba-card-type sbt">SBT</span>
+                    </div>
+                  </a>
+                </div>
+              </div>
+
+              <!-- 所有NFT -->
+              <div v-if="tbaNftAssets.length > 0" class="tba-subsection">
+                <h4>🏺 所有NFT</h4>
+                <div class="tba-grid">
+                  <a v-for="asset in tbaNftAssets" :key="asset.contractAddress + '-' + asset.tokenId"
+                     :href="'token.html?ca=' + asset.contractAddress + '&id=' + asset.tokenId"
+                     class="tba-card">
+                    <img v-if="asset.metadata.image" :src="asset.metadata.image" :alt="asset.metadata.name"
+                         class="tba-card-image" @error="handleImageError" />
+                    <div class="tba-card-info">
+                      <div class="tba-card-name">{{ asset.metadata.name }}</div>
+                      <div class="tba-card-artist">{{ asset.artistName }}</div>
+                      <span class="tba-card-type nft">NFT #{{ asset.tokenId }}</span>
+                    </div>
+                  </a>
+                </div>
+              </div>
+            </template>
+          </div>
+
           <!-- ネットワーク表示 -->
           <div class="network-badge">
             <span class="network-dot"></span>
@@ -596,7 +794,19 @@
             tokenStandard: "ERC721",
             menuOpen: false,
             showControlPanel: true,
+            // TBA
+            tbaAddress: null,
+            tbaAssets: [],
+            tbaLoading: false,
           };
+        },
+        computed: {
+          tbaSbtAssets() {
+            return this.tbaAssets.filter(a => a.type === 'sbt');
+          },
+          tbaNftAssets() {
+            return this.tbaAssets.filter(a => a.type === 'nft');
+          },
         },
         mounted() {
           // Web3の初期化
@@ -611,7 +821,7 @@
 
         methods: {
           initializeEthers() {
-            this.web3 = new Web3("https://polygon-rpc.com");
+            this.web3 = new Web3(CONFIG.chain.rpc);
             this.showStatus("接続完了", "success");
           },
 
@@ -634,6 +844,8 @@
             if (!this.contractAddress) return;
 
             this.loading = true;
+            this.tbaAddress = null;
+            this.tbaAssets = [];
             try {
               this.contract = new this.web3.eth.Contract(
                 ERC721_ABI,
@@ -642,6 +854,9 @@
               const nft = await this.fetchTokenMetadata(this.tokenId || 1);
               if (nft) this.nfts = [nft];
               this.showStatus("取得完了", "success");
+
+              // TBA取得（NFT読み込み成功後）
+              this.loadTba(this.tokenId || 1);
             } catch (error) {
               this.showStatus(`エラー: ${error.message}`, "error");
             }
@@ -689,9 +904,40 @@
             }
           },
 
+          async loadTba(tokenId) {
+            this.tbaLoading = true;
+            try {
+              // TBAアドレス算出
+              const tbaAddr = await NFTHelper.getTbaAddress(this.contractAddress, tokenId);
+              this.tbaAddress = tbaAddr;
+              console.log('TBA address:', tbaAddr);
+
+              if (tbaAddr) {
+                // TBA内のアセット取得
+                const assets = await NFTHelper.getTbaAssets(tbaAddr);
+                this.tbaAssets = assets;
+                console.log('TBA assets:', assets);
+              }
+            } catch (e) {
+              console.error('TBA load error:', e);
+            }
+            this.tbaLoading = false;
+          },
+
+          shortAddr(addr) {
+            if (!addr) return '';
+            return addr.slice(0, 6) + '...' + addr.slice(-4);
+          },
+
+          polygonscanAddress(addr) {
+            return CONFIG.chain.explorer + '/address/' + addr;
+          },
+
           loadSampleContract() {
-            this.contractAddress = "0x72A02d559435319bD77462690E202a28c2Ba8623";
-            this.tokenId = "26";
+            // 最初の作家の最初のトークンをサンプルとして表示
+            const first = CONFIG.contracts.nfts[0];
+            this.contractAddress = first.address;
+            this.tokenId = "1";
             this.loadContract();
           },
 
@@ -704,7 +950,7 @@
           },
 
           viewOnPolygonScan(tokenId) {
-            const url = `https://polygonscan.com/token/${this.contractAddress}?a=${tokenId}`;
+            const url = `${CONFIG.chain.explorer}/token/${this.contractAddress}?a=${tokenId}`;
             window.open(url, "_blank");
           },
 
