@@ -58,8 +58,31 @@ const NFTHelper = {
     }
   },
 
-  // トークンメタデータ取得（リトライ付き）
+  // ── キャッシュ ──
+
+  _cacheKey(contractAddress, tokenId) {
+    return `bizen:nft:${contractAddress.toLowerCase()}:${tokenId}`;
+  },
+
+  _getCache(contractAddress, tokenId) {
+    try {
+      const data = localStorage.getItem(this._cacheKey(contractAddress, tokenId));
+      return data ? JSON.parse(data) : null;
+    } catch { return null; }
+  },
+
+  _setCache(contractAddress, tokenId, metadata) {
+    try {
+      localStorage.setItem(this._cacheKey(contractAddress, tokenId), JSON.stringify(metadata));
+    } catch { /* localStorage full — ignore */ }
+  },
+
+  // トークンメタデータ取得（キャッシュ + リトライ付き）
   async getTokenMetadata(contractAddress, tokenId, retries = 3) {
+    // キャッシュチェック
+    const cached = this._getCache(contractAddress, tokenId);
+    if (cached) return cached;
+
     const contract = this.getContract(contractAddress);
     for (let attempt = 0; attempt < retries; attempt++) {
       try {
@@ -68,7 +91,7 @@ const NFTHelper = {
         const response = await fetch(resolvedUri);
         const metadata = await response.json();
 
-        return {
+        const result = {
           tokenId: tokenId.toString(),
           name: metadata.name || 'NFT',
           description: metadata.description || '',
@@ -78,6 +101,10 @@ const NFTHelper = {
           attributes: metadata.attributes || [],
           rawUri: uri,
         };
+
+        // キャッシュ保存（immutableなので永続）
+        this._setCache(contractAddress, tokenId, result);
+        return result;
       } catch (e) {
         if (attempt < retries - 1 && e.message && e.message.includes('rate limit')) {
           console.warn(`Rate limited (tokenId=${tokenId}), retry in ${(attempt + 1) * 3}s...`);
