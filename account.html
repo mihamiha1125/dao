@@ -589,7 +589,7 @@
           },
         },
 
-        mounted() {
+        async mounted() {
           const params = new URLSearchParams(window.location.search);
           const addr = params.get('address') || params.get('addr') || params.get('eoa');
           if (addr && /^0x[0-9a-fA-F]{40}$/.test(addr)) {
@@ -598,6 +598,16 @@
             this.viewMode = 'view';
             this.connected = true;
             this.loadPortfolio();
+          } else {
+            // 自動再接続（ポップアップなし）
+            const result = await Wallet.reconnect();
+            if (result) {
+              this.address = result.address;
+              this.viewMode = 'self';
+              this.connected = true;
+              this.setupWalletCallbacks();
+              this.loadPortfolio();
+            }
           }
         },
 
@@ -613,26 +623,27 @@
               this.address = address;
               this.viewMode = 'self';
               this.connected = true;
-
-              // アカウント変更時にリロード
-              Wallet.onAccountChange((newAddr) => {
-                if (newAddr) {
-                  this.address = newAddr;
-                  this.loadPortfolio();
-                } else {
-                  this.disconnectWallet();
-                }
-              });
-
-              Wallet.onChainChange(() => {
-                this.loadPortfolio();
-              });
-
+              this.setupWalletCallbacks();
+              await Wallet.ensurePolygon();
               await this.loadPortfolio();
             } catch (e) {
               this.error = e.message || 'ウォレット接続に失敗しました';
             }
             this.connecting = false;
+          },
+
+          setupWalletCallbacks() {
+            Wallet.onAccountChange((newAddr) => {
+              if (newAddr) {
+                this.address = newAddr;
+                this.loadPortfolio();
+              } else {
+                this.disconnectWallet();
+              }
+            });
+            Wallet.onChainChange(() => {
+              this.loadPortfolio();
+            });
           },
 
           disconnectWallet() {

@@ -29,7 +29,7 @@ const Wallet = {
     return addr.slice(0, 6) + '...' + addr.slice(-4);
   },
 
-  // MetaMask接続
+  // MetaMask接続（ユーザー操作でポップアップ）
   async connect() {
     if (!this.isAvailable()) {
       throw new Error('MetaMaskがインストールされていません');
@@ -42,8 +42,35 @@ const Wallet = {
 
     this._address = accounts[0];
     this._chainId = parseInt(await window.ethereum.request({ method: 'eth_chainId' }), 16);
+    this._setupListeners();
 
-    // イベントリスナー設定
+    return { address: this._address, chainId: this._chainId };
+  },
+
+  // 自動再接続（ポップアップなし、既に承認済みならつながる）
+  async reconnect() {
+    if (!this.isAvailable()) return null;
+
+    try {
+      const accounts = await window.ethereum.request({ method: 'eth_accounts' });
+      if (!accounts || accounts.length === 0) return null;
+
+      this._address = accounts[0];
+      this._chainId = parseInt(await window.ethereum.request({ method: 'eth_chainId' }), 16);
+      this._setupListeners();
+
+      return { address: this._address, chainId: this._chainId };
+    } catch (e) {
+      return null;
+    }
+  },
+
+  // イベントリスナー設定（重複防止）
+  _listenersSet: false,
+  _setupListeners() {
+    if (this._listenersSet) return;
+    this._listenersSet = true;
+
     window.ethereum.on('accountsChanged', (accounts) => {
       this._address = accounts[0] || null;
       this._callbacks.account.forEach(cb => cb(this._address));
@@ -53,8 +80,6 @@ const Wallet = {
       this._chainId = parseInt(chainId, 16);
       this._callbacks.chain.forEach(cb => cb(this._chainId));
     });
-
-    return { address: this._address, chainId: this._chainId };
   },
 
   // 接続解除（状態クリアのみ、MetaMask側は操作しない）
