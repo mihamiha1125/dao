@@ -220,6 +220,15 @@
         border-color: rgba(107, 182, 255, 0.5);
       }
 
+      .mime-badge {
+        display: inline-block;
+        margin-left: 6px;
+        padding: 2px 8px;
+        background: rgba(107, 182, 255, 0.15);
+        border-radius: 4px;
+        font-size: 12px;
+      }
+
       .nft-main-image {
         width: 100%;
         max-width: 400px;
@@ -459,8 +468,8 @@
                     class="nft-main-image"
                     @error="handleImageError"
                   />
-                  <a v-if="nft.animation_url" :href="'viewer/?src=' + encodeURIComponent(nft.animation_url)" target="_blank" class="animation-link">
-                    Animation URL
+                  <a v-if="nft.animation_url" :href="animationLinkUrl(nft)" target="_blank" class="animation-link">
+                    Animation URL <span v-if="nft.animation_mime_type" class="mime-badge">{{ formatMimeType(nft.animation_mime_type) }}</span>
                   </a>
                 </div>
 
@@ -660,9 +669,17 @@
                 animation_url: metadata.animation_url
                   ? metadata.animation_url.replace("ipfs://", "https://ipfs.io/ipfs/")
                   : "",
+                animation_mime_type: "",
                 attributes: metadata.attributes || [],
                 tokenURI: uri,
               };
+
+              if (result.animation_url) {
+                result.animation_mime_type = await this.detectMimeType(
+                  result.animation_url,
+                  metadata.animation_url_mime_type || metadata.mime_type
+                );
+              }
 
               console.log("NFT result:", result);
               return result;
@@ -689,6 +706,77 @@
           viewOnPolygonScan(tokenId) {
             const url = `https://polygonscan.com/token/${this.contractAddress}?a=${tokenId}`;
             window.open(url, "_blank");
+          },
+
+          is3dMime(mime) {
+            return mime && (mime.startsWith('model/') || mime === 'application/octet-stream');
+          },
+
+          animationLinkUrl(nft) {
+            if (this.is3dMime(nft.animation_mime_type)) {
+              return 'viewer/?src=' + encodeURIComponent(nft.animation_url);
+            }
+            return nft.animation_url;
+          },
+
+          async detectMimeType(url, metadataMime) {
+            // メタデータにmime_typeがあればそれを使う
+            if (metadataMime) return metadataMime;
+
+            // URL拡張子から判定
+            const extMap = {
+              '.mp4': 'video/mp4',
+              '.webm': 'video/webm',
+              '.ogv': 'video/ogg',
+              '.mp3': 'audio/mpeg',
+              '.wav': 'audio/wav',
+              '.ogg': 'audio/ogg',
+              '.glb': 'model/gltf-binary',
+              '.gltf': 'model/gltf+json',
+              '.html': 'text/html',
+              '.svg': 'image/svg+xml',
+              '.png': 'image/png',
+              '.jpg': 'image/jpeg',
+              '.jpeg': 'image/jpeg',
+              '.gif': 'image/gif',
+              '.webp': 'image/webp',
+            };
+            try {
+              const pathname = new URL(url).pathname.toLowerCase();
+              for (const [ext, mime] of Object.entries(extMap)) {
+                if (pathname.endsWith(ext)) return mime;
+              }
+            } catch {}
+
+            // HEADリクエストで判定
+            try {
+              const res = await axios.head(url);
+              const ct = res.headers['content-type'];
+              if (ct) return ct.split(';')[0].trim();
+            } catch {}
+
+            return '';
+          },
+
+          formatMimeType(mime) {
+            if (!mime) return '';
+            const labels = {
+              'video/mp4': 'MP4',
+              'video/webm': 'WebM',
+              'video/ogg': 'OGG Video',
+              'audio/mpeg': 'MP3',
+              'audio/wav': 'WAV',
+              'audio/ogg': 'OGG Audio',
+              'model/gltf-binary': 'GLB (3D)',
+              'model/gltf+json': 'glTF (3D)',
+              'text/html': 'HTML',
+              'image/svg+xml': 'SVG',
+              'image/png': 'PNG',
+              'image/jpeg': 'JPEG',
+              'image/gif': 'GIF',
+              'image/webp': 'WebP',
+            };
+            return labels[mime] || mime;
           },
 
           handleImageError(event) {
