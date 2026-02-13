@@ -538,11 +538,11 @@
                                 const metadata = await NFTHelper.getTokenMetadata(this.contractAddress, id);
                                 if (metadata) {
                                     const cardIdx = i + idx;
-                                    this.tokenCards[cardIdx] = {
+                                    this.tokenCards.splice(cardIdx, 1, {
                                         tokenId: id,
                                         name: metadata.name,
                                         image: metadata.image,
-                                    };
+                                    });
                                 }
                             });
                             await Promise.allSettled(batch);
