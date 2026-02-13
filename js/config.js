@@ -88,5 +88,29 @@ const ABI = {
   ],
 };
 
+// TBA Account ABI
+ABI.TBAAccount = [
+  { "constant": true, "inputs": [], "name": "owner", "outputs": [{ "name": "", "type": "address" }], "type": "function" },
+  { "constant": true, "inputs": [], "name": "token", "outputs": [{ "name": "", "type": "uint256" }, { "name": "", "type": "address" }, { "name": "", "type": "uint256" }], "type": "function" },
+  { "constant": true, "inputs": [], "name": "nonce", "outputs": [{ "name": "", "type": "uint256" }], "type": "function" },
+  { "inputs": [{ "name": "to", "type": "address" }, { "name": "value", "type": "uint256" }, { "name": "data", "type": "bytes" }], "name": "executeCall", "outputs": [{ "name": "result", "type": "bytes" }], "stateMutability": "payable", "type": "function" },
+];
+
+// Donate コントラクト ABI
+ABI.Donate = [
+  // ── Read ──
+  { "constant": true, "inputs": [{ "name": "account", "type": "address" }], "name": "balanceOf", "outputs": [{ "name": "", "type": "uint256" }], "type": "function" },
+  { "constant": true, "inputs": [], "name": "totalSupply", "outputs": [{ "name": "", "type": "uint256" }], "type": "function" },
+  { "constant": true, "inputs": [], "name": "_allTotalDonations", "outputs": [{ "name": "", "type": "uint256" }], "type": "function" },
+  { "constant": true, "inputs": [], "name": "_allUsedPoints", "outputs": [{ "name": "", "type": "uint256" }], "type": "function" },
+  { "constant": true, "inputs": [{ "name": "", "type": "address" }], "name": "_totalDonations", "outputs": [{ "name": "", "type": "uint256" }], "type": "function" },
+  { "constant": true, "inputs": [{ "name": "", "type": "address" }], "name": "_usedPoints", "outputs": [{ "name": "", "type": "uint256" }], "type": "function" },
+  { "constant": true, "inputs": [{ "name": "donor", "type": "address" }], "name": "latestPoint", "outputs": [{ "name": "", "type": "uint256" }], "type": "function" },
+  { "constant": true, "inputs": [{ "name": "sender", "type": "address" }], "name": "getDonationHistory", "outputs": [{ "components": [{ "name": "amount", "type": "uint256" }, { "name": "date", "type": "uint256" }, { "name": "detail", "type": "string" }], "name": "", "type": "tuple[]" }], "type": "function" },
+  { "constant": true, "inputs": [{ "name": "sender", "type": "address" }], "name": "getsubstituteDonationHistory", "outputs": [{ "components": [{ "name": "amount", "type": "uint256" }, { "name": "donor", "type": "address" }, { "name": "date", "type": "uint256" }, { "name": "detail", "type": "string" }], "name": "", "type": "tuple[]" }], "type": "function" },
+  // ── Write ──
+  { "inputs": [{ "name": "donor", "type": "address" }, { "name": "detail", "type": "string" }, { "name": "gasCashback", "type": "uint256" }], "name": "donate", "outputs": [], "stateMutability": "payable", "type": "function" },
+];
+
 // フルABI（ERC721 + Enumerable を結合）
 ABI.ERC721Full = [...ABI.ERC721, ...ABI.ERC721Enumerable];
