@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8" />
+  <title>BizenDAO</title>
+  <script>
+    // GitHub Pages SPA routing fallback
+    // Clean URLs → query parameter redirect
+    (function() {
+      var path = window.location.pathname;
+      var search = window.location.search;
+      var base = '/'; // GitHub Pages root. Change to '/dao/' if deployed under subpath.
+
+      // /regist/:discordId/:secret
+      var regist = path.match(/\/regist\/(\d+)\/(.+?)(?:\/|$)/);
+      if (regist) {
+        window.location.replace(base + 'regist/?discord=' + regist[1] + '&secret=' + regist[2]);
+        return;
+      }
+
+      // /regist/:discordId
+      var registId = path.match(/\/regist\/(\d+)\/?$/);
+      if (registId) {
+        window.location.replace(base + 'regist/?discord=' + registId[1]);
+        return;
+      }
+
+      // /account/:address
+      var account = path.match(/\/account\/(0x[0-9a-fA-F]{40})\/?$/);
+      if (account) {
+        window.location.replace(base + 'account.html?address=' + account[1]);
+        return;
+      }
+
+      // /setting/:page
+      var setting = path.match(/\/setting\/(admin|creator|contract)\/?$/);
+      if (setting) {
+        window.location.replace(base + 'setting/' + setting[1] + '.html');
+        return;
+      }
+    })();
+  </script>
+  <style>
+    body {
+      background: #111;
+      color: #f6f6f6;
+      font-family: sans-serif;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      margin: 0;
+    }
+    .container { text-align: center; }
+    a { color: #6bb6ff; text-decoration: none; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>404</h1>
+    <p>ページが見つかりませんでした</p>
+    <a href="index.html">トップページへ →</a>
+  </div>
+</body>
+</html>
