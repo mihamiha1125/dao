@@ -40,6 +40,7 @@ const Wallet = {
       throw new Error('ウォレット接続が拒否されました');
     }
 
+    try { localStorage.removeItem('bizen:wallet:disconnected'); } catch {}
     this._address = accounts[0];
     this._chainId = parseInt(await window.ethereum.request({ method: 'eth_chainId' }), 16);
     this._setupListeners();
@@ -50,6 +51,11 @@ const Wallet = {
   // 自動再接続（ポップアップなし、既に承認済みならつながる）
   async reconnect() {
     if (!this.isAvailable()) return null;
+
+    // ユーザーが明示的に切断した場合は再接続しない
+    try {
+      if (localStorage.getItem('bizen:wallet:disconnected') === '1') return null;
+    } catch {}
 
     try {
       const accounts = await window.ethereum.request({ method: 'eth_accounts' });
@@ -82,10 +88,11 @@ const Wallet = {
     });
   },
 
-  // 接続解除（状態クリアのみ、MetaMask側は操作しない）
+  // 接続解除（状態クリア + 明示的切断フラグ）
   disconnect() {
     this._address = null;
     this._chainId = null;
+    try { localStorage.setItem('bizen:wallet:disconnected', '1'); } catch {}
   },
 
   // Polygonチェーンであることを確認・切替
