@@ -1,6 +1,6 @@
 // =================================================
 // nft.js — NFT/TBA取得ロジック共通モジュール
-// Web3.jsに依存（config.jsも必須）
+// Web3.jsに依存（config.js, cache.js も必須）
 // =================================================
 
 const NFTHelper = {
@@ -21,8 +21,11 @@ const NFTHelper = {
 
   // ── NFT基本情報 ──
 
-  // コントラクト情報取得
+  // コントラクト情報取得（キャッシュ付き）
   async getContractInfo(address) {
+    const cached = Cache.getContractInfo(address);
+    if (cached) return cached;
+
     const contract = this.getContract(address);
     try {
       const [name, symbol, totalSupply] = await Promise.all([
@@ -30,57 +33,48 @@ const NFTHelper = {
         contract.methods.symbol().call(),
         contract.methods.totalSupply().call(),
       ]);
-      return { name, symbol, totalSupply: parseInt(totalSupply) };
+      const result = { name, symbol, totalSupply: parseInt(totalSupply) };
+      Cache.setContractInfo(address, result);
+      return result;
     } catch (e) {
       console.error('getContractInfo error:', e);
       return { name: 'Unknown', symbol: '???', totalSupply: 0 };
     }
   },
 
-  // 特定オーナーの所有トークンID一覧
+  // 特定オーナーの所有トークンID一覧（キャッシュ付き）
   async getOwnedTokenIds(contractAddress, ownerAddress) {
+    const cached = Cache.getOwned(contractAddress, ownerAddress);
+    if (cached) return cached;
+
     const contract = this.getContract(contractAddress);
     try {
       const balance = parseInt(await contract.methods.balanceOf(ownerAddress).call());
-      if (balance === 0) return [];
+      if (balance === 0) {
+        Cache.setOwned(contractAddress, ownerAddress, []);
+        return [];
+      }
 
       const promises = [];
       for (let i = 0; i < balance; i++) {
         promises.push(contract.methods.tokenOfOwnerByIndex(ownerAddress, i).call());
       }
       const results = await Promise.allSettled(promises);
-      return results
+      const tokenIds = results
         .filter(r => r.status === 'fulfilled')
         .map(r => r.value.toString());
+      Cache.setOwned(contractAddress, ownerAddress, tokenIds);
+      return tokenIds;
     } catch (e) {
       console.error('getOwnedTokenIds error:', e);
       return [];
     }
   },
 
-  // ── キャッシュ ──
-
-  _cacheKey(contractAddress, tokenId) {
-    return `bizen:nft:${contractAddress.toLowerCase()}:${tokenId}`;
-  },
-
-  _getCache(contractAddress, tokenId) {
-    try {
-      const data = localStorage.getItem(this._cacheKey(contractAddress, tokenId));
-      return data ? JSON.parse(data) : null;
-    } catch { return null; }
-  },
-
-  _setCache(contractAddress, tokenId, metadata) {
-    try {
-      localStorage.setItem(this._cacheKey(contractAddress, tokenId), JSON.stringify(metadata));
-    } catch { /* localStorage full — ignore */ }
-  },
-
   // トークンメタデータ取得（キャッシュ + リトライ付き）
   async getTokenMetadata(contractAddress, tokenId, retries = 3) {
     // キャッシュチェック
-    const cached = this._getCache(contractAddress, tokenId);
+    const cached = Cache.getNft(contractAddress, tokenId);
     if (cached) return cached;
 
     const contract = this.getContract(contractAddress);
@@ -103,7 +97,7 @@ const NFTHelper = {
         };
 
         // キャッシュ保存（immutableなので永続）
-        this._setCache(contractAddress, tokenId, result);
+        Cache.setNft(contractAddress, tokenId, result);
         return result;
       } catch (e) {
         if (attempt < retries - 1 && e.message && e.message.includes('rate limit')) {
@@ -120,14 +114,16 @@ const NFTHelper = {
 
   // ── TBA (ERC-6551) ──
 
-  // NFTのTBAアドレスを算出
+  // NFTのTBAアドレスを算出（deterministic → 永続キャッシュ）
   async getTbaAddress(tokenContract, tokenId) {
+    const cached = Cache.getTba(tokenContract, tokenId);
+    if (cached) return cached;
+
     const registry = new (this.getWeb3()).eth.Contract(
       ABI.ERC6551Registry,
       CONFIG.contracts.tba.registry
     );
     try {
-      // ERC-6551 v0.2.0: account(implementation, chainId, tokenContract, tokenId, salt)
       const tbaAddress = await registry.methods.account(
         CONFIG.contracts.tba.implementation,
         CONFIG.chain.id,
@@ -135,6 +131,7 @@ const NFTHelper = {
         tokenId,
         CONFIG.contracts.tba.salt
       ).call();
+      Cache.setTba(tokenContract, tokenId, tbaAddress);
       return tbaAddress;
     } catch (e) {
       console.error('getTbaAddress error:', e);
