@@ -58,29 +58,37 @@ const NFTHelper = {
     }
   },
 
-  // トークンメタデータ取得
-  async getTokenMetadata(contractAddress, tokenId) {
+  // トークンメタデータ取得（リトライ付き）
+  async getTokenMetadata(contractAddress, tokenId, retries = 3) {
     const contract = this.getContract(contractAddress);
-    try {
-      const uri = await contract.methods.tokenURI(tokenId).call();
-      const resolvedUri = this.resolveUri(uri);
-      const response = await fetch(resolvedUri);
-      const metadata = await response.json();
+    for (let attempt = 0; attempt < retries; attempt++) {
+      try {
+        const uri = await contract.methods.tokenURI(tokenId).call();
+        const resolvedUri = this.resolveUri(uri);
+        const response = await fetch(resolvedUri);
+        const metadata = await response.json();
 
-      return {
-        tokenId: tokenId.toString(),
-        name: metadata.name || 'NFT',
-        description: metadata.description || '',
-        image: this.resolveUri(metadata.image || ''),
-        animation_url: metadata.animation_url ? this.resolveUri(metadata.animation_url) : '',
-        external_url: metadata.external_url || '',
-        attributes: metadata.attributes || [],
-        rawUri: uri,
-      };
-    } catch (e) {
-      console.error(`getTokenMetadata error (tokenId=${tokenId}):`, e);
-      return null;
+        return {
+          tokenId: tokenId.toString(),
+          name: metadata.name || 'NFT',
+          description: metadata.description || '',
+          image: this.resolveUri(metadata.image || ''),
+          animation_url: metadata.animation_url ? this.resolveUri(metadata.animation_url) : '',
+          external_url: metadata.external_url || '',
+          attributes: metadata.attributes || [],
+          rawUri: uri,
+        };
+      } catch (e) {
+        if (attempt < retries - 1 && e.message && e.message.includes('rate limit')) {
+          console.warn(`Rate limited (tokenId=${tokenId}), retry in ${(attempt + 1) * 3}s...`);
+          await new Promise(r => setTimeout(r, (attempt + 1) * 3000));
+        } else {
+          console.error(`getTokenMetadata error (tokenId=${tokenId}):`, e);
+          return null;
+        }
+      }
     }
+    return null;
   },
 
   // ── TBA (ERC-6551) ──

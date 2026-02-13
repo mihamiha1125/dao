@@ -529,8 +529,9 @@
                         this.showStatus(`${tokenIds.length}件のトークンを取得しました。メタデータを読み込み中...`, 'info');
                         this.loading = false;
 
-                        // メタデータを非同期で取得（カードを順次更新）
-                        const metaBatchSize = 5;
+                        // メタデータを非同期で取得（カードを順次更新、レート制限対策）
+                        const metaBatchSize = 3;
+                        const delay = ms => new Promise(r => setTimeout(r, ms));
                         for (let i = 0; i < tokenIds.length; i += metaBatchSize) {
                             const batch = tokenIds.slice(i, i + metaBatchSize).map(async (id, idx) => {
                                 const metadata = await NFTHelper.getTokenMetadata(this.contractAddress, id);
@@ -544,6 +545,7 @@
                                 }
                             });
                             await Promise.allSettled(batch);
+                            await delay(1500);
                         }
 
                         this.showStatus(`${tokenIds.length}件のトークンを表示中`, 'success');
