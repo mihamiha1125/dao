@@ -32,8 +32,8 @@ bizen.sbs はモノリシックな構成で、分散型コミュニティでの�
 | NFT (ERC-721) | 宝山窯 | `0xd84d7A7FE688a1CC40a931cab2aaF189eB3ceEcB` |
 | NFT (ERC-721) | 藤田 祥 | `0x6C8b4094809CE7e5Ec1a44F7553Cf51b969C2aEb` |
 | SBT | メンバーシップ | `0xFcC45d28E7e51Cff6d8181Bd73023d46daf1fEd2` |
-| TBA Registry | (1) | `0xa8a05744C04c7AD0D31Fcee368aC18040832F1c1` |
-| TBA Registry | (2) | `0x63c8A3536E4A647D48fC0076D442e3243f7e773b` |
+| TBA Registry | ERC-6551 | `0xa8a05744C04c7AD0D31Fcee368aC18040832F1c1` |
+| TBA Implementation | ERC-6551 | `0x63c8A3536E4A647D48fC0076D442e3243f7e773b` |
 | Donation | treasury | `0x94280C465Be5C49B02b779Fd02d344815cb937d6` |
 
 ※ `0x72A02d...8623` は旧コントラクト。使用しない。
@@ -216,7 +216,120 @@ BizenDAO treasuryへMATICを寄付できるページ。
 
 ---
 
-## 3. 共通モジュール設計
+## 3. TBA表示機能 (`token.html` に統合)
+
+### 概要
+NFT詳細ページ（token.html）で、そのNFTのTBA（Token Bound Account）が所有するアセット一覧を表示する。
+備前焼の**箱書き**（SBT）や、他の作家のNFTがTBA内に格納されている。
+
+### TBAの仕組み（ERC-6551）
+
+```
+備前焼NFT（例: コロンNo.1）
+  │
+  └── TBA（Token Bound Account）= NFT専用ウォレット
+       │  Registry.account(implementation, salt, chainId, tokenContract, tokenId)
+       │  → CREATE2でアドレス算出（デプロイ不要で確定的）
+       │
+       ├── SBT: 箱書き（来歴証明、transferできない）
+       ├── NFT: 他の作家の作品（入れることも可能）
+       └── NFT: ...
+```
+
+### 現実世界との対応
+
+| リアル | オンチェーン |
+|--------|------------|
+| 備前焼作品 | ERC-721 NFT |
+| 作品の箱 | TBA（ERC-6551） |
+| 箱書き（証明書） | SBT（箱の中にある、取り出せない） |
+| 箱の中の付属品 | TBA内の他のNFT |
+
+### token.html 画面構成（TBA追加後）
+
+```
+┌─────────────────────────────────────┐
+│  NFT詳細: コロンNo.1                 │
+│  作家: 森 敏彰                       │
+│  [作品画像]                          │
+│  description / attributes            │
+│                                      │
+│  ── 📦 Token Bound Account ────────  │
+│  TBA: 0xabc...def  [Polygonscan ↗]  │
+│                                      │
+│  ┌─ 箱書き（SBT）────────────────┐  │
+│  │ 📜 web3cms                     │  │
+│  │ [箱書き画像]                   │  │
+│  │ Decentralized Content...       │  │
+│  │ → external_url ↗              │  │
+│  └────────────────────────────────┘  │
+│                                      │
+│  ┌─ 所有NFT ─────────────────────┐  │
+│  │ 🏺 森大雅 - 作品名  → 詳細    │  │
+│  │ 🏺 藤田祥 - 作品名  → 詳細    │  │
+│  └────────────────────────────────┘  │
+│                                      │
+│  （アセットなしの場合:               │
+│  　「この作品のTBAにはまだ            │
+│  　アセットがありません」）            │
+└─────────────────────────────────────┘
+```
+
+### データフロー
+
+```
+token.html?ca=0x...&id=1
+        │
+        ▼
+  1. tokenURI → メタデータ表示（既存）
+        │
+        ▼
+  2. Registry.account(
+       implementation,  // 0x63c8...
+       salt=0,          // bytes32(0)
+       chainId=137,     // Polygon
+       tokenContract,   // ca パラメータ
+       tokenId          // id パラメータ
+     ) → tbaAddress
+        │
+        ▼
+  3. 5コントラクト並列で balanceOf(tbaAddress):
+     ┌──────────┬──────────┬──────────┬──────────┬──────┐
+     │ 森敏彰NFT │ 森大雅NFT │ 宝山窯NFT │ 藤田祥NFT │  SBT │
+     │ balanceOf│ balanceOf│ balanceOf│ balanceOf│balanceOf│
+     └────┬─────┴────┬─────┴────┬─────┴────┬─────┴──┬───┘
+          │          │          │          │        │
+          ▼          ▼          ▼          ▼        ▼
+     tokenOfOwner  (同)       (同)       (同)   tokenOfOwner
+     ByIndex                                    ByIndex
+          │                                        │
+          ▼                                        ▼
+     tokenURI →                              tokenURI →
+     メタデータ                              メタデータ
+          │                                        │
+          └──────────────┬─────────────────────────┘
+                         ▼
+                  TBA所有アセット一覧表示
+                  ├── SBT → 「箱書き」セクション
+                  └── NFT → 「所有NFT」セクション
+```
+
+### ERC-6551 Registry ABI（必要部分）
+
+```javascript
+// account() — TBAアドレスを算出（viewのみ、ガス不要）
+function account(
+  address implementation,  // 0x63c8A3...773b
+  bytes32 salt,           // 0x0
+  uint256 chainId,        // 137
+  address tokenContract,  // NFTコントラクト
+  uint256 tokenId         // トークンID
+) external view returns (address)
+```
+
+---
+
+## 4. 共通モジュール設計
 
 ### js/wallet.js
 
@@ -233,25 +346,91 @@ const Wallet = {
 }
 ```
 
-### js/contracts.js
+### js/config.js
 
 ```javascript
-// コントラクト定義を一元管理
-const CONTRACTS = {
-  nfts: [
-    { key: 'mori-toshiaki', name: '森 敏彰', address: '0x4D0A...' },
-    { key: 'mori-taiga',    name: '森 大雅', address: '0x3DAC...' },
-    { key: 'hozangama',     name: '宝山窯',  address: '0xd84d...' },
-    { key: 'fujita-syo',    name: '藤田 祥', address: '0x6C8b...' },
-  ],
-  sbt: { address: '0xFcC4...' },
-  tba: ['0xa8a0...', '0x63c8...'],
-  donation: '0x94280C465Be5C49B02b779Fd02d344815cb937d6',
+// BizenDAO 設定一元管理
+// コントラクト追加・RPC変更・チェーン切替はここだけ触ればOK
+
+const CONFIG = {
+  // ── ネットワーク ──
+  chain: {
+    id: 137,
+    name: 'Polygon Mainnet',
+    rpc: 'https://polygon-rpc.com',
+    explorer: 'https://polygonscan.com',
+    currency: { name: 'MATIC', symbol: 'MATIC', decimals: 18 },
+  },
+
+  // ── ゲートウェイ ──
+  gateways: {
+    ipfs: 'https://ipfs.io/ipfs/',
+    arweave: 'https://arweave.net/',
+  },
+
+  // ── コントラクト ──
+  contracts: {
+    // 作家NFT（ERC-721 Enumerable）
+    nfts: [
+      { key: 'mori-toshiaki', name: '森 敏彰',  address: '0x4D0Abc6272E1288A177EA8E3076d4aFe2DB9C658' },
+      { key: 'mori-taiga',    name: '森 大雅',   address: '0x3DAC002d33A0c6F1c1684783DDaA78E5f29F14cc' },
+      { key: 'hozangama',     name: '宝山窯',    address: '0xd84d7A7FE688a1CC40a931cab2aaF189eB3ceEcB' },
+      { key: 'fujita-syo',    name: '藤田 祥',   address: '0x6C8b4094809CE7e5Ec1a44F7553Cf51b969C2aEb' },
+    ],
+
+    // SBT — 箱書き・メンバーシップ（ERC-721 Enumerable, non-transferable）
+    sbt: {
+      address: '0xFcC45d28E7e51Cff6d8181Bd73023d46daf1fEd2',
+    },
+
+    // TBA（ERC-6551 Token Bound Account）
+    tba: {
+      registry:       '0xa8a05744C04c7AD0D31Fcee368aC18040832F1c1',
+      implementation: '0x63c8A3536E4A647D48fC0076D442e3243f7e773b',
+      salt: '0x0000000000000000000000000000000000000000000000000000000000000000',
+    },
+
+    // 寄付先
+    donation: {
+      address: '0x94280C465Be5C49B02b779Fd02d344815cb937d6',
+      presets: [1, 5, 10, 50],
+    },
+  },
+
+  // ── TBAスキャン対象 ──
+  // TBA内アセット取得時に balanceOf を叩く全コントラクト
+  // → contracts.nfts + contracts.sbt から自動生成するヘルパー
+  get tbaTargets() {
+    return [
+      ...this.contracts.nfts.map(n => ({ ...n, type: 'nft' })),
+      { key: 'sbt', name: 'BizenDAO SBT', address: this.contracts.sbt.address, type: 'sbt' },
+    ]
+  },
 }
 
-// ABI定義（ERC-721 Enumerable 必要最小限）
-const ERC721_ABI = [ ... ]  // 既存 contract.html / token.html から抽出
+// ── ABI定義 ──
+const ABI = {
+  ERC721: [
+    'function balanceOf(address owner) view returns (uint256)',
+    'function ownerOf(uint256 tokenId) view returns (address)',
+    'function tokenURI(uint256 tokenId) view returns (string)',
+  ],
+  ERC721Enumerable: [
+    'function totalSupply() view returns (uint256)',
+    'function tokenByIndex(uint256 index) view returns (uint256)',
+    'function tokenOfOwnerByIndex(address owner, uint256 index) view returns (uint256)',
+  ],
+  ERC6551Registry: [
+    'function account(address implementation, bytes32 salt, uint256 chainId, address tokenContract, uint256 tokenId) view returns (address)',
+  ],
+}
 ```
+
+**運用ルール:**
+- 新しい作家が参加 → `contracts.nfts` に1行追加するだけ
+- TBAスキャン対象は `tbaTargets` で自動生成（手動管理不要）
+- RPC変更・チェーン切替 → `chain` を変えるだけ
+- 全ページ（mypage / token / contract / donation）がこの1ファイルを参照
 
 ### js/nft.js
 
@@ -278,8 +457,8 @@ dao/
 │   ├── app2.js               # 既存（変更なし）
 │   ├── app3.js               # 既存（変更なし）
 │   ├── products.json         # 既存（変更なし）
+│   ├── config.js             # 【新規】設定一元管理（コントラクト・RPC・チェーン）
 │   ├── wallet.js             # 【新規】MetaMask接続共通
-│   ├── contracts.js          # 【新規】コントラクト定義・ABI
 │   └── nft.js                # 【新規】NFT取得ロジック共通
 ├── mypage.html               # 【新規】マイページ
 ├── donation.html             # 【新規】寄付ページ
@@ -293,7 +472,7 @@ dao/
 ## 5. フェーズ計画
 
 ### Phase 1: 共通基盤 + マイページ
-- [ ] `js/contracts.js` — コントラクト定義・ABI一元管理
+- [ ] `js/config.js` — 設定一元管理（コントラクト・RPC・チェーン・ゲートウェイ）
 - [ ] `js/wallet.js` — MetaMask接続共通モジュール
 - [ ] `js/nft.js` — 既存コードからNFT取得ロジック抽出
 - [ ] `mypage.html` — ウォレット接続 + SBT確認 + NFT一覧（作家別）
@@ -303,13 +482,13 @@ dao/
 - [ ] `donation.html` — 寄付UI + MATIC送金
 - [ ] DAOの活動紹介コンテンツ作成
 
-### Phase 3: TBA & 改善
-- [ ] TBA (Token Bound Account) 対応 — NFTが所有するアセット表示
+### Phase 3: TBA（箱書き）& 改善
+- [ ] TBA (Token Bound Account) 対応 — token.htmlに統合
 - [ ] NFTメタデータのキャッシュ（localStorage）
 - [ ] 寄付履歴表示（オンチェーンイベント読み取り）
 - [ ] 多言語対応（既存の lang パラメータ連携）
 - [ ] bizen.sbs からの移行告知
-- [ ] 既存 contract.html / token.html のリファクタ（共通モジュール利用に切替）
+- [ ] 既存 contract.html / token.html のリファクタ（config.js + 共通モジュール利用に切替）
 
 ---
 
