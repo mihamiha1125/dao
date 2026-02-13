@@ -88,11 +88,20 @@ const Wallet = {
     });
   },
 
-  // 接続解除（状態クリア + 明示的切断フラグ）
+  // 接続解除（状態クリア + 明示的切断フラグ + MetaMask権限取消試行）
   disconnect() {
     this._address = null;
     this._chainId = null;
     try { localStorage.setItem('bizen:wallet:disconnected', '1'); } catch {}
+
+    // MetaMask v11.5+: wallet_revokePermissions で実際に切断
+    // 未対応ブラウザでは静かに失敗するだけ
+    if (this.isAvailable()) {
+      window.ethereum.request({
+        method: 'wallet_revokePermissions',
+        params: [{ eth_accounts: {} }],
+      }).catch(() => {});
+    }
   },
 
   // Polygonチェーンであることを確認・切替
