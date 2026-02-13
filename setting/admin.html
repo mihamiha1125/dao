@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>BizenDAO - Admin Settings</title>
+    <link rel="stylesheet" href="../css/style.css" />
+    <script src="https://cdn.jsdelivr.net/npm/web3@1.10.0/dist/web3.min.js" crossorigin="anonymous"></script>
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js" crossorigin="anonymous"></script>
+    <script src="../js/config.js"></script>
+    <script src="../js/cache.js"></script>
+    <script src="../js/nft.js"></script>
+    <script src="../js/wallet.js"></script>
+    <script src="../js/manager.js"></script>
+    <link rel="stylesheet" href="setting.css" />
+  </head>
+  <body>
+    <div id="app">
+      <header class="site-header">
+        <div class="container header-inner">
+          <a href="../index.html" class="logo"><img src="../img/349F5603-389E-48C6-81C9-1515A338A59B.png" alt="ロゴ"></a>
+        </div>
+      </header>
+
+      <main>
+        <div class="setting-page">
+          <h1 class="setting-title">Admin Settings</h1>
+
+          <!-- Setting Nav -->
+          <nav class="setting-nav">
+            <a href="admin.html" class="setting-nav-item active">Admin</a>
+            <a href="creator.html" class="setting-nav-item">Creator</a>
+            <a href="contract.html" class="setting-nav-item">Contract</a>
+          </nav>
+
+          <!-- 未接続 -->
+          <div v-if="!connected" class="connect-prompt">
+            <button v-if="metamaskAvailable" class="btn btn-connect" @click="connectWallet" :disabled="connecting">
+              {{ connecting ? '接続中...' : '🦊 ウォレットを接続' }}
+            </button>
+            <p v-else>MetaMaskがインストールされていません</p>
+          </div>
+
+          <!-- 権限なし -->
+          <div v-else-if="userType !== 'admin'" class="access-denied">
+            <p>⚠ Admin権限がありません ({{ userType }})</p>
+            <p class="wallet-info-small">{{ shortAddress }}</p>
+          </div>
+
+          <!-- Admin管理 -->
+          <template v-else>
+            <div class="wallet-bar">
+              <span>🦊 {{ shortAddress }}</span>
+              <span class="user-badge admin">admin</span>
+            </div>
+
+            <div v-if="error" class="error-message">{{ error }}</div>
+            <div v-if="success" class="success-message">{{ success }}</div>
+
+            <!-- 管理者一覧 -->
+            <div class="section-card">
+              <h2 class="section-heading">Admin List</h2>
+              <div v-if="loading" class="loading-center"><span class="loading-spinner"></span></div>
+              <table v-else class="data-table">
+                <thead>
+                  <tr><th>Address</th><th></th></tr>
+                </thead>
+                <tbody>
+                  <tr v-for="addr in admins" :key="addr">
+                    <td class="mono">{{ addr }}</td>
+                    <td class="actions">
+                      <button class="btn btn-sm btn-danger" @click="removeAdmin(addr)" :disabled="sending">削除</button>
+                    </td>
+                  </tr>
+                  <tr v-if="admins.length === 0"><td colspan="2" class="empty">管理者が登録されていません</td></tr>
+                </tbody>
+              </table>
+            </div>
+
+            <!-- 追加フォーム -->
+            <div class="section-card">
+              <h2 class="section-heading">Add Admin</h2>
+              <div class="form-row">
+                <input type="text" v-model="newAdmin" class="form-input mono" placeholder="0x..." />
+                <button class="btn btn-primary" @click="addAdmin" :disabled="!newAdmin || sending">追加</button>
+              </div>
+            </div>
+
+            <div class="manager-info">
+              Manager: <a :href="CONFIG.chain.explorer + '/address/' + CONFIG.contracts.manager.address" target="_blank" class="mono link">{{ CONFIG.contracts.manager.address }}</a>
+            </div>
+          </template>
+        </div>
+      </main>
+    </div>
+
+    <script>
+      const { createApp } = Vue;
+      createApp({
+        data() {
+          return {
+            connected: false, connecting: false, sending: false, loading: false,
+            error: null, success: null,
+            userType: 'none',
+            admins: [],
+            newAdmin: '',
+            CONFIG,
+          };
+        },
+        computed: {
+          metamaskAvailable() { return Wallet.isAvailable(); },
+          shortAddress() { return Wallet.shortAddress(); },
+        },
+        async mounted() {
+          const r = await Wallet.reconnect();
+          if (r) { this.connected = true; await this.init(); }
+        },
+        methods: {
+          async connectWallet() {
+            this.connecting = true;
+            try {
+              await Wallet.connect();
+              await Wallet.ensurePolygon();
+              this.connected = true;
+              await this.init();
+            } catch (e) { this.error = e.message; }
+            this.connecting = false;
+          },
+          async init() {
+            this.loading = true;
+            this.userType = await Manager.checkUser();
+            if (this.userType === 'admin') {
+              this.admins = await Manager.getAdmins();
+            }
+            this.loading = false;
+          },
+          async addAdmin() {
+            this.sending = true; this.error = null; this.success = null;
+            try {
+              await Manager.setAdmin(this.newAdmin);
+              this.success = 'Admin追加完了';
+              this.newAdmin = '';
+              this.admins = await Manager.getAdmins();
+            } catch (e) { this.error = e.message; }
+            this.sending = false;
+          },
+          async removeAdmin(addr) {
+            if (!confirm(addr + ' を管理者から削除しますか？')) return;
+            this.sending = true; this.error = null; this.success = null;
+            try {
+              await Manager.delAdmin(addr);
+              this.success = 'Admin削除完了';
+              this.admins = await Manager.getAdmins();
+            } catch (e) { this.error = e.message; }
+            this.sending = false;
+          },
+        },
+      }).mount('#app');
+    </script>
+  </body>
+</html>

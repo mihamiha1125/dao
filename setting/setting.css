@@ -1,0 +1,293 @@
+/* Setting pages shared styles */
+main {
+  padding-top: 100px;
+  min-height: 100vh;
+}
+
+.setting-page {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 5px 20px 60px;
+}
+
+.setting-title {
+  font-size: 28px;
+  margin-bottom: 20px;
+  font-family: "Times New Roman", "Hiragino Mincho ProN", serif;
+  letter-spacing: 0.05em;
+}
+
+/* Nav */
+.setting-nav {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 28px;
+  border-bottom: 1px solid rgba(255,255,255,0.1);
+  padding-bottom: 0;
+}
+
+.setting-nav-item {
+  padding: 10px 20px;
+  color: rgba(255,255,255,0.6);
+  text-decoration: none;
+  font-size: 14px;
+  border-bottom: 2px solid transparent;
+  transition: all 0.2s;
+}
+
+.setting-nav-item:hover {
+  color: rgba(255,255,255,0.9);
+}
+
+.setting-nav-item.active {
+  color: #fff;
+  border-bottom-color: rgba(255,255,255,0.8);
+}
+
+/* Connect / Access */
+.connect-prompt {
+  text-align: center;
+  padding: 60px 20px;
+}
+
+.access-denied {
+  text-align: center;
+  padding: 60px 20px;
+  color: #ff9966;
+}
+
+.wallet-info-small {
+  font-family: monospace;
+  font-size: 13px;
+  opacity: 0.5;
+  margin-top: 8px;
+}
+
+/* Buttons */
+.btn {
+  padding: 10px 20px;
+  border: 1px solid rgba(255,255,255,0.3);
+  background: transparent;
+  color: #f6f6f6;
+  border-radius: 6px;
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn:hover { background: rgba(255,255,255,0.08); border-color: rgba(255,255,255,0.5); }
+.btn:disabled { opacity: 0.4; cursor: not-allowed; }
+.btn-primary { background: rgba(255,255,255,0.1); }
+.btn-sm { padding: 5px 12px; font-size: 12px; }
+.btn-danger { border-color: rgba(255,80,80,0.4); color: #ff6666; }
+.btn-danger:hover { background: rgba(255,80,80,0.1); }
+
+.btn-connect {
+  padding: 14px 36px;
+  font-size: 15px;
+  background: rgba(255,255,255,0.06);
+}
+
+/* Wallet bar */
+.wallet-bar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 24px;
+  padding: 10px 16px;
+  background: rgba(255,255,255,0.04);
+  border-radius: 8px;
+  font-family: monospace;
+  font-size: 14px;
+}
+
+.user-badge {
+  padding: 3px 10px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-family: sans-serif;
+}
+
+.user-badge.admin {
+  background: rgba(255,200,50,0.15);
+  color: #ffcc44;
+  border: 1px solid rgba(255,200,50,0.3);
+}
+
+/* Section card */
+.section-card {
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 10px;
+  padding: 24px;
+  margin-bottom: 24px;
+}
+
+.section-heading {
+  font-size: 17px;
+  margin-bottom: 16px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+}
+
+/* Table */
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+.data-table th {
+  text-align: left;
+  padding: 8px 10px;
+  opacity: 0.5;
+  font-weight: 400;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  border-bottom: 1px solid rgba(255,255,255,0.1);
+}
+
+.data-table td {
+  padding: 10px;
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+  vertical-align: middle;
+}
+
+.data-table .mono { font-family: monospace; font-size: 12px; }
+.data-table .addr-cell { max-width: 160px; }
+.data-table .actions { white-space: nowrap; text-align: right; }
+.data-table .actions .btn { margin-left: 6px; }
+.data-table .empty { text-align: center; opacity: 0.4; font-style: italic; padding: 20px; }
+.data-table .row-hidden { opacity: 0.45; }
+
+/* Badges */
+.badge-visible {
+  display: inline-block;
+  padding: 2px 8px;
+  background: rgba(0,255,100,0.1);
+  border: 1px solid rgba(0,255,100,0.25);
+  border-radius: 4px;
+  color: #66ff99;
+  font-size: 11px;
+}
+
+.badge-hidden {
+  display: inline-block;
+  padding: 2px 8px;
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.15);
+  border-radius: 4px;
+  color: rgba(255,255,255,0.4);
+  font-size: 11px;
+}
+
+.type-badge {
+  display: inline-block;
+  padding: 2px 8px;
+  background: rgba(100,180,255,0.1);
+  border: 1px solid rgba(100,180,255,0.2);
+  border-radius: 4px;
+  font-size: 11px;
+  color: #6bb6ff;
+}
+
+/* Form */
+.form-row {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.form-field label {
+  display: block;
+  font-size: 12px;
+  opacity: 0.6;
+  margin-bottom: 6px;
+}
+
+.form-input {
+  width: 100%;
+  padding: 10px 14px;
+  border: 1px solid rgba(255,255,255,0.2);
+  background: rgba(255,255,255,0.05);
+  color: #f6f6f6;
+  border-radius: 6px;
+  font-size: 13px;
+  box-sizing: border-box;
+}
+
+.form-input:focus {
+  outline: none;
+  border-color: rgba(255,255,255,0.4);
+  background: rgba(255,255,255,0.08);
+}
+
+.form-input.mono { font-family: monospace; }
+
+.form-actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 4px;
+}
+
+/* Messages */
+.error-message {
+  padding: 12px 16px;
+  background: rgba(255,0,0,0.1);
+  border: 1px solid rgba(255,0,0,0.3);
+  border-radius: 6px;
+  color: #ff6666;
+  font-size: 13px;
+  margin-bottom: 16px;
+}
+
+.success-message {
+  padding: 12px 16px;
+  background: rgba(0,255,100,0.08);
+  border: 1px solid rgba(0,255,100,0.25);
+  border-radius: 6px;
+  color: #66ff99;
+  font-size: 13px;
+  margin-bottom: 16px;
+}
+
+/* Manager info */
+.manager-info {
+  margin-top: 24px;
+  font-size: 12px;
+  opacity: 0.4;
+}
+
+.link { color: #6bb6ff; text-decoration: none; }
+.link:hover { text-decoration: underline; }
+
+/* Loading */
+.loading-center { text-align: center; padding: 24px; }
+
+.loading-spinner {
+  display: inline-block;
+  width: 24px;
+  height: 24px;
+  border: 2px solid rgba(255,255,255,0.2);
+  border-radius: 50%;
+  border-top-color: #fff;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* Responsive */
+@media (max-width: 640px) {
+  .data-table { font-size: 12px; }
+  .data-table th, .data-table td { padding: 8px 6px; }
+  .form-grid { grid-template-columns: 1fr; }
+  .setting-nav-item { padding: 8px 14px; font-size: 13px; }
+}

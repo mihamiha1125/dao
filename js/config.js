@@ -41,6 +41,11 @@ const CONFIG = {
       salt: 1,
     },
 
+    // Manager（admin/creator/contract管理）
+    manager: {
+      address: '0x39615ac8f231D0099114eaC3095431e210C8f654',
+    },
+
     // 寄付先
     donation: {
       address: '0x94280C465Be5C49B02b779Fd02d344815cb937d6',
@@ -110,6 +115,29 @@ ABI.Donate = [
   { "constant": true, "inputs": [{ "name": "sender", "type": "address" }], "name": "getsubstituteDonationHistory", "outputs": [{ "components": [{ "name": "amount", "type": "uint256" }, { "name": "donor", "type": "address" }, { "name": "date", "type": "uint256" }, { "name": "detail", "type": "string" }], "name": "", "type": "tuple[]" }], "type": "function" },
   // ── Write ──
   { "inputs": [{ "name": "donor", "type": "address" }, { "name": "detail", "type": "string" }, { "name": "gasCashback", "type": "uint256" }], "name": "donate", "outputs": [], "stateMutability": "payable", "type": "function" },
+];
+
+// Manager ABI
+ABI.Manager = [
+  // ── Read ──
+  { "constant": true, "inputs": [], "name": "checkUser", "outputs": [{ "name": "", "type": "string" }], "type": "function" },
+  { "constant": true, "inputs": [], "name": "getAdmins", "outputs": [{ "name": "", "type": "address[]" }, { "name": "", "type": "uint256" }], "type": "function" },
+  { "constant": true, "inputs": [], "name": "getAllContracts", "outputs": [{ "name": "", "type": "address[]" }, { "name": "", "type": "string[]" }, { "name": "", "type": "string[]" }, { "name": "", "type": "bool[]" }], "type": "function" },
+  { "constant": true, "inputs": [], "name": "getAllCreators", "outputs": [{ "name": "", "type": "address[]" }, { "name": "", "type": "string[]" }, { "name": "", "type": "string[]" }, { "name": "", "type": "bool[]" }], "type": "function" },
+  { "constant": true, "inputs": [{ "name": "account", "type": "address" }], "name": "getContract", "outputs": [{ "name": "", "type": "address" }, { "name": "", "type": "string" }, { "name": "", "type": "string" }, { "name": "", "type": "bool" }], "type": "function" },
+  // ── Write (admin only) ──
+  { "inputs": [{ "name": "account", "type": "address" }], "name": "setAdmin", "outputs": [], "type": "function" },
+  { "inputs": [{ "name": "account", "type": "address" }], "name": "delAdmin", "outputs": [], "type": "function" },
+  { "inputs": [{ "name": "account", "type": "address" }, { "name": "name", "type": "string" }, { "name": "typename", "type": "string" }], "name": "setCreator", "outputs": [], "type": "function" },
+  { "inputs": [{ "name": "account", "type": "address" }, { "name": "name", "type": "string" }, { "name": "typename", "type": "string" }], "name": "setCreatorInfo", "outputs": [], "type": "function" },
+  { "inputs": [{ "name": "account", "type": "address" }], "name": "delCreator", "outputs": [], "type": "function" },
+  { "inputs": [{ "name": "account", "type": "address" }], "name": "hiddenCreator", "outputs": [], "type": "function" },
+  { "inputs": [{ "name": "account", "type": "address" }], "name": "publicCreator", "outputs": [], "type": "function" },
+  { "inputs": [{ "name": "account", "type": "address" }, { "name": "name", "type": "string" }, { "name": "typename", "type": "string" }], "name": "setContract", "outputs": [], "type": "function" },
+  { "inputs": [{ "name": "account", "type": "address" }, { "name": "name", "type": "string" }, { "name": "typename", "type": "string" }], "name": "setContractInfo", "outputs": [], "type": "function" },
+  { "inputs": [{ "name": "account", "type": "address" }], "name": "deleteContract", "outputs": [], "type": "function" },
+  { "inputs": [{ "name": "account", "type": "address" }], "name": "hiddenContract", "outputs": [], "type": "function" },
+  { "inputs": [{ "name": "account", "type": "address" }], "name": "publicContract", "outputs": [], "type": "function" },
 ];
 
 // フルABI（ERC721 + Enumerable を結合）

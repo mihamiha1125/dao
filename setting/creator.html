@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>BizenDAO - Creator Settings</title>
+    <link rel="stylesheet" href="../css/style.css" />
+    <script src="https://cdn.jsdelivr.net/npm/web3@1.10.0/dist/web3.min.js" crossorigin="anonymous"></script>
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js" crossorigin="anonymous"></script>
+    <script src="../js/config.js"></script>
+    <script src="../js/cache.js"></script>
+    <script src="../js/nft.js"></script>
+    <script src="../js/wallet.js"></script>
+    <script src="../js/manager.js"></script>
+    <link rel="stylesheet" href="setting.css" />
+  </head>
+  <body>
+    <div id="app">
+      <header class="site-header">
+        <div class="container header-inner">
+          <a href="../index.html" class="logo"><img src="../img/349F5603-389E-48C6-81C9-1515A338A59B.png" alt="ロゴ"></a>
+        </div>
+      </header>
+
+      <main>
+        <div class="setting-page">
+          <h1 class="setting-title">Creator Settings</h1>
+
+          <nav class="setting-nav">
+            <a href="admin.html" class="setting-nav-item">Admin</a>
+            <a href="creator.html" class="setting-nav-item active">Creator</a>
+            <a href="contract.html" class="setting-nav-item">Contract</a>
+          </nav>
+
+          <div v-if="!connected" class="connect-prompt">
+            <button v-if="metamaskAvailable" class="btn btn-connect" @click="connectWallet" :disabled="connecting">
+              {{ connecting ? '接続中...' : '🦊 ウォレットを接続' }}
+            </button>
+            <p v-else>MetaMaskがインストールされていません</p>
+          </div>
+
+          <div v-else-if="userType !== 'admin'" class="access-denied">
+            <p>⚠ Admin権限が必要です ({{ userType }})</p>
+            <p class="wallet-info-small">{{ shortAddress }}</p>
+          </div>
+
+          <template v-else>
+            <div class="wallet-bar">
+              <span>🦊 {{ shortAddress }}</span>
+              <span class="user-badge admin">admin</span>
+            </div>
+
+            <div v-if="error" class="error-message">{{ error }}</div>
+            <div v-if="success" class="success-message">{{ success }}</div>
+
+            <!-- 作家一覧 -->
+            <div class="section-card">
+              <h2 class="section-heading">Creator List</h2>
+              <div v-if="loading" class="loading-center"><span class="loading-spinner"></span></div>
+              <table v-else class="data-table">
+                <thead>
+                  <tr><th>Address</th><th>Name</th><th>Type</th><th>Visible</th><th></th></tr>
+                </thead>
+                <tbody>
+                  <tr v-for="c in creators" :key="c.address" :class="{ 'row-hidden': !c.visible }">
+                    <td class="mono addr-cell">{{ shortAddr(c.address) }}</td>
+                    <td>{{ c.name }}</td>
+                    <td>{{ c.type }}</td>
+                    <td>
+                      <span v-if="c.visible" class="badge-visible">公開</span>
+                      <span v-else class="badge-hidden">非公開</span>
+                    </td>
+                    <td class="actions">
+                      <button v-if="c.visible" class="btn btn-sm" @click="toggleCreator(c, false)" :disabled="sending">非公開</button>
+                      <button v-else class="btn btn-sm" @click="toggleCreator(c, true)" :disabled="sending">公開</button>
+                      <button class="btn btn-sm btn-danger" @click="removeCreator(c)" :disabled="sending">削除</button>
+                    </td>
+                  </tr>
+                  <tr v-if="creators.length === 0"><td colspan="5" class="empty">作家が登録されていません</td></tr>
+                </tbody>
+              </table>
+            </div>
+
+            <!-- 追加 / 編集 -->
+            <div class="section-card">
+              <h2 class="section-heading">{{ editMode ? 'Edit Creator' : 'Add Creator' }}</h2>
+              <div class="form-grid">
+                <div class="form-field">
+                  <label>Address</label>
+                  <input type="text" v-model="form.address" class="form-input mono" placeholder="0x..." :disabled="editMode" />
+                </div>
+                <div class="form-field">
+                  <label>Name</label>
+                  <input type="text" v-model="form.name" class="form-input" placeholder="作家名" />
+                </div>
+                <div class="form-field">
+                  <label>Type</label>
+                  <input type="text" v-model="form.type" class="form-input" placeholder="creator" />
+                </div>
+              </div>
+              <div class="form-actions">
+                <button class="btn btn-primary" @click="submitCreator" :disabled="!form.address || !form.name || sending">
+                  {{ editMode ? '更新' : '追加' }}
+                </button>
+                <button v-if="editMode" class="btn" @click="cancelEdit">キャンセル</button>
+              </div>
+            </div>
+
+            <div class="manager-info">
+              Manager: <a :href="CONFIG.chain.explorer + '/address/' + CONFIG.contracts.manager.address" target="_blank" class="mono link">{{ CONFIG.contracts.manager.address }}</a>
+            </div>
+          </template>
+        </div>
+      </main>
+    </div>
+
+    <script>
+      const { createApp } = Vue;
+      createApp({
+        data() {
+          return {
+            connected: false, connecting: false, sending: false, loading: false,
+            error: null, success: null,
+            userType: 'none',
+            creators: [],
+            form: { address: '', name: '', type: 'creator' },
+            editMode: false,
+            CONFIG,
+          };
+        },
+        computed: {
+          metamaskAvailable() { return Wallet.isAvailable(); },
+          shortAddress() { return Wallet.shortAddress(); },
+        },
+        async mounted() {
+          const r = await Wallet.reconnect();
+          if (r) { this.connected = true; await this.init(); }
+        },
+        methods: {
+          async connectWallet() {
+            this.connecting = true;
+            try {
+              await Wallet.connect();
+              await Wallet.ensurePolygon();
+              this.connected = true;
+              await this.init();
+            } catch (e) { this.error = e.message; }
+            this.connecting = false;
+          },
+          async init() {
+            this.loading = true;
+            this.userType = await Manager.checkUser();
+            if (this.userType === 'admin') {
+              this.creators = await Manager.getAllCreators();
+            }
+            this.loading = false;
+          },
+          shortAddr(a) { return a ? a.slice(0,6) + '...' + a.slice(-4) : ''; },
+          startEdit(c) {
+            this.form = { address: c.address, name: c.name, type: c.type };
+            this.editMode = true;
+          },
+          cancelEdit() {
+            this.form = { address: '', name: '', type: 'creator' };
+            this.editMode = false;
+          },
+          async submitCreator() {
+            this.sending = true; this.error = null; this.success = null;
+            try {
+              if (this.editMode) {
+                await Manager.setCreatorInfo(this.form.address, this.form.name, this.form.type);
+                this.success = '作家情報を更新しました';
+              } else {
+                await Manager.setCreator(this.form.address, this.form.name, this.form.type);
+                this.success = '作家を追加しました';
+              }
+              this.cancelEdit();
+              this.creators = await Manager.getAllCreators();
+            } catch (e) { this.error = e.message; }
+            this.sending = false;
+          },
+          async toggleCreator(c, visible) {
+            this.sending = true; this.error = null; this.success = null;
+            try {
+              if (visible) { await Manager.publicCreator(c.address); }
+              else { await Manager.hiddenCreator(c.address); }
+              this.success = visible ? '公開にしました' : '非公開にしました';
+              this.creators = await Manager.getAllCreators();
+            } catch (e) { this.error = e.message; }
+            this.sending = false;
+          },
+          async removeCreator(c) {
+            if (!confirm(c.name + ' (' + c.address + ') を削除しますか？')) return;
+            this.sending = true; this.error = null; this.success = null;
+            try {
+              await Manager.delCreator(c.address);
+              this.success = '作家を削除しました';
+              this.creators = await Manager.getAllCreators();
+            } catch (e) { this.error = e.message; }
+            this.sending = false;
+          },
+        },
+      }).mount('#app');
+    </script>
+  </body>
+</html>
