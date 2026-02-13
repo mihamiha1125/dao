@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>BizenDAO - Contract Token List</title>
     
-    <!-- 既存のCSS -->
     <link rel="stylesheet" href="css/style.css">
     
     <!-- Web3.js CDN -->
@@ -13,9 +12,12 @@
     
     <!-- Vue 3 CDN -->
     <script src="https://unpkg.com/vue@3/dist/vue.global.js" crossorigin="anonymous"></script>
+
+    <!-- BizenDAO 共通モジュール -->
+    <script src="js/config.js"></script>
+    <script src="js/nft.js"></script>
     
     <style>
-        /* Contract Viewer固有のスタイル */
         main {
             padding-top: 100px;
             min-height: 100vh;
@@ -83,6 +85,7 @@
             display: flex;
             gap: 16px;
             margin-top: 20px;
+            flex-wrap: wrap;
         }
         
         .btn {
@@ -109,8 +112,37 @@
             opacity: 0.5;
             cursor: not-allowed;
         }
+
+        /* 作家プリセットボタン */
+        .artist-presets {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            margin-top: 16px;
+        }
+
+        .artist-btn {
+            padding: 8px 16px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            background: rgba(255, 255, 255, 0.05);
+            color: #f6f6f6;
+            border-radius: 20px;
+            font-size: 13px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .artist-btn:hover {
+            background: rgba(255, 255, 255, 0.15);
+            border-color: rgba(255, 255, 255, 0.4);
+        }
+
+        .artist-btn.active {
+            background: rgba(255, 255, 255, 0.2);
+            border-color: rgba(255, 255, 255, 0.5);
+        }
         
-        /* ステータス表示 */
+        /* ステータス */
         .status-message {
             padding: 12px 16px;
             border-radius: 8px;
@@ -135,77 +167,97 @@
             border: 1px solid rgba(255, 0, 0, 0.3);
             color: #ff6666;
         }
-        
+
         /* コントラクト情報 */
         .contract-info {
-            background: rgba(255, 255, 255, 0.05);
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            gap: 24px;
+            flex-wrap: wrap;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.03);
             border-radius: 12px;
-            padding: 30px;
-            margin-bottom: 40px;
+            border: 1px solid rgba(255, 255, 255, 0.08);
         }
-        
-        .info-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 20px;
-        }
-        
+
         .info-item {
             display: flex;
             flex-direction: column;
-            gap: 8px;
+            gap: 4px;
         }
-        
+
         .info-label {
-            font-size: 14px;
-            opacity: 0.7;
+            font-size: 12px;
+            opacity: 0.6;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
         }
-        
+
         .info-value {
             font-size: 16px;
             font-weight: 500;
         }
-        
-        /* トークンリスト */
-        .token-list {
+
+        /* カードグリッド */
+        .token-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+            gap: 20px;
+        }
+
+        .token-card {
             background: rgba(255, 255, 255, 0.05);
             border: 1px solid rgba(255, 255, 255, 0.1);
             border-radius: 12px;
-            padding: 30px;
-        }
-        
-        .list-title {
-            font-size: 20px;
-            margin-bottom: 20px;
-            opacity: 0.9;
-        }
-        
-        .token-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
-            gap: 12px;
-            max-height: 400px;
-            overflow-y: auto;
-        }
-        
-        .token-item {
-            background: rgba(255, 255, 255, 0.1);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            border-radius: 8px;
-            padding: 12px;
-            text-align: center;
-            cursor: pointer;
+            overflow: hidden;
             transition: all 0.3s ease;
+            cursor: pointer;
             text-decoration: none;
-            color: #f6f6f6;
+            color: inherit;
+            display: block;
         }
-        
-        .token-item:hover {
-            background: rgba(255, 255, 255, 0.2);
-            border-color: rgba(255, 255, 255, 0.4);
-            transform: translateY(-2px);
-            color: #f6f6f6;
+
+        .token-card:hover {
+            border-color: rgba(255, 255, 255, 0.3);
+            transform: translateY(-3px);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+        }
+
+        .token-card-image {
+            width: 100%;
+            aspect-ratio: 1;
+            object-fit: cover;
+            background: rgba(0, 0, 0, 0.2);
+        }
+
+        .token-card-placeholder {
+            width: 100%;
+            aspect-ratio: 1;
+            background: rgba(255, 255, 255, 0.03);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 32px;
+            opacity: 0.3;
+        }
+
+        .token-card-info {
+            padding: 14px;
+        }
+
+        .token-card-name {
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 6px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .token-card-id {
+            font-size: 12px;
+            opacity: 0.5;
+            font-family: monospace;
         }
         
         /* ローディング */
@@ -243,30 +295,32 @@
             margin-bottom: 20px;
         }
         
-        /* ネットワーク表示 */
+        /* ネットワーク */
         .network-badge {
             display: inline-flex;
             align-items: center;
             gap: 8px;
-            padding: 6px 16px;
-            background: rgba(138, 43, 226, 0.1);
-            border: 1px solid rgba(138, 43, 226, 0.3);
+            padding: 8px 16px;
+            background: rgba(130, 71, 229, 0.1);
+            border: 1px solid rgba(130, 71, 229, 0.3);
             border-radius: 20px;
             font-size: 14px;
-            margin-bottom: 20px;
+            margin-top: 40px;
         }
         
         .network-dot {
             width: 8px;
             height: 8px;
-            background: #8a2be2;
+            background: #66ff99;
             border-radius: 50%;
-            animation: pulse 2s infinite;
         }
-        
-        @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.5; }
+
+        /* レスポンシブ */
+        @media (max-width: 768px) {
+            .token-grid {
+                grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+                gap: 12px;
+            }
         }
     </style>
 </head>
@@ -275,8 +329,7 @@
         <!-- ヘッダー -->
         <header class="site-header">
             <div class="container header-inner">
-                <a href="index.html" class="logo"><img src="./img/349F5603-389E-48C6-81C9-1515A338A59B.png" alt="ロゴ"> </a>
-                
+                <a href="index.html" class="logo"><img src="./img/349F5603-389E-48C6-81C9-1515A338A59B.png" alt="ロゴ"></a>
                 <div class="header-right">
                     <button class="lang-toggle" type="button">EN/JP</button>
                     <button class="nav-toggle" type="button" aria-label="メニューを開閉" @click="toggleMenu">
@@ -284,7 +337,6 @@
                     </button>
                 </div>
             </div>
-            
             <div class="nav-overlay" :class="{ 'is-open': menuOpen }" @click="closeMenu"></div>
             <aside class="nav-drawer" :class="{ 'is-open': menuOpen }" aria-label="サイトメニュー">
                 <ul class="drawer-nav">
@@ -298,28 +350,29 @@
                 </ul>
             </aside>
         </header>
-        
+
         <main>
             <div class="contract-viewer">
                 <h1 class="viewer-title">Contract Token List</h1>
-                <p class="viewer-subtitle">Enumerable対応NFTコントラクトのトークン一覧</p>
-                
-                <!-- ネットワーク表示 -->
-                <div class="network-badge">
-                    <span class="network-dot"></span>
-                    <span>Polygon Mainnet</span>
-                </div>
+                <p class="viewer-subtitle">NFTコントラクトのトークン一覧</p>
                 
                 <!-- コントロールパネル -->
                 <div class="control-panel">
+                    <!-- 作家プリセット -->
+                    <div style="margin-bottom: 20px;">
+                        <label style="font-size: 14px; opacity: 0.8;">作家で選ぶ</label>
+                        <div class="artist-presets">
+                            <button v-for="artist in artists" :key="artist.key"
+                                class="artist-btn" :class="{ active: contractAddress === artist.address }"
+                                @click="selectArtist(artist)">
+                                {{ artist.name }}
+                            </button>
+                        </div>
+                    </div>
+
                     <div class="input-field">
                         <label>NFTコントラクトアドレス</label>
-                        <input 
-                            type="text" 
-                            v-model="contractAddress" 
-                            placeholder="0x..."
-                            @keyup.enter="loadContract"
-                        >
+                        <input type="text" v-model="contractAddress" placeholder="0x..." @keyup.enter="loadContract" />
                     </div>
                     
                     <div class="action-buttons">
@@ -327,15 +380,9 @@
                             <span v-if="loading" class="loading-spinner"></span>
                             <span v-else>トークン一覧を取得</span>
                         </button>
-                        <button class="btn" @click="loadSampleContract">
-                            サンプルコントラクト
-                        </button>
-                        <button class="btn" @click="clearData">
-                            クリア
-                        </button>
+                        <button class="btn" @click="clearData">クリア</button>
                     </div>
                     
-                    <!-- ステータスメッセージ -->
                     <div v-if="statusMessage" :class="['status-message', statusClass]">
                         {{ statusMessage }}
                     </div>
@@ -343,48 +390,55 @@
                 
                 <!-- コントラクト情報 -->
                 <div v-if="contractInfo.name" class="contract-info">
-                    <h3 class="list-title">コントラクト情報</h3>
-                    <div class="info-grid">
-                        <div class="info-item">
-                            <span class="info-label">名前</span>
-                            <span class="info-value">{{ contractInfo.name }}</span>
-                        </div>
-                        <div class="info-item">
-                            <span class="info-label">シンボル</span>
-                            <span class="info-value">{{ contractInfo.symbol }}</span>
-                        </div>
-                        <div class="info-item">
-                            <span class="info-label">総発行数</span>
-                            <span class="info-value">{{ contractInfo.totalSupply }}</span>
-                        </div>
-                        <div class="info-item">
-                            <span class="info-label">コントラクト</span>
-                            <span class="info-value">{{ contractAddress.slice(0, 6) }}...{{ contractAddress.slice(-4) }}</span>
-                        </div>
+                    <div class="info-item">
+                        <span class="info-label">名前</span>
+                        <span class="info-value">{{ contractInfo.name }}</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">シンボル</span>
+                        <span class="info-value">{{ contractInfo.symbol }}</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">総発行数</span>
+                        <span class="info-value">{{ contractInfo.totalSupply }}</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">コントラクト</span>
+                        <span class="info-value" style="font-family: monospace; font-size: 13px;">
+                            <a :href="CONFIG.chain.explorer + '/address/' + contractAddress" target="_blank" 
+                               style="color: #6bb6ff; text-decoration: none;">
+                                {{ contractAddress.slice(0, 10) }}...{{ contractAddress.slice(-6) }}
+                            </a>
+                        </span>
                     </div>
                 </div>
                 
-                <!-- トークンリスト -->
-                <div v-if="tokens.length > 0" class="token-list">
-                    <h3 class="list-title">トークンID一覧 ({{ tokens.length }}件)</h3>
-                    <div class="token-grid">
-                        <a 
-                            v-for="tokenId in tokens" 
-                            :key="tokenId"
-                            :href="`token.html?ca=${contractAddress}&id=${tokenId}`"
-                            class="token-item"
-                            target="_blank"
-                        >
-                            #{{ tokenId }}
-                        </a>
-                    </div>
+                <!-- トークンカードグリッド -->
+                <div v-if="tokenCards.length > 0" class="token-grid">
+                    <a v-for="card in tokenCards" :key="card.tokenId"
+                       :href="'token.html?ca=' + contractAddress + '&id=' + card.tokenId"
+                       class="token-card">
+                        <img v-if="card.image" :src="card.image" :alt="card.name"
+                             class="token-card-image" @error="handleImageError($event)" />
+                        <div v-else class="token-card-placeholder">🏺</div>
+                        <div class="token-card-info">
+                            <div class="token-card-name">{{ card.name || 'Loading...' }}</div>
+                            <div class="token-card-id">#{{ card.tokenId }}</div>
+                        </div>
+                    </a>
+                </div>
+
+                <!-- ネットワーク表示 -->
+                <div class="network-badge">
+                    <span class="network-dot"></span>
+                    <span>{{ CONFIG.chain.name }}</span>
                 </div>
                 
-                <!-- ローディングオーバーレイ -->
+                <!-- ローディング -->
                 <div v-if="loading" class="loading-overlay">
                     <div class="loading-content">
                         <div class="loading-spinner"></div>
-                        <p>トークン一覧を読み込み中...</p>
+                        <p>{{ loadingMessage }}</p>
                     </div>
                 </div>
             </div>
@@ -393,190 +447,140 @@
 
     <script>
         const { createApp } = Vue;
-        
-        // ERC721Enumerable ABI
-        const ERC721_ENUMERABLE_ABI = [
-            {
-                "inputs": [],
-                "name": "name",
-                "outputs": [{"name": "", "type": "string"}],
-                "type": "function"
-            },
-            {
-                "inputs": [],
-                "name": "symbol", 
-                "outputs": [{"name": "", "type": "string"}],
-                "type": "function"
-            },
-            {
-                "inputs": [],
-                "name": "totalSupply",
-                "outputs": [{"name": "", "type": "uint256"}],
-                "type": "function"
-            },
-            {
-                "inputs": [{"name": "index", "type": "uint256"}],
-                "name": "tokenByIndex",
-                "outputs": [{"name": "", "type": "uint256"}],
-                "type": "function"
-            }
-        ];
 
         createApp({
             data() {
                 return {
                     contractAddress: '',
-                    tokens: [],
                     contractInfo: {},
+                    tokenCards: [],
                     loading: false,
+                    loadingMessage: 'トークン一覧を読み込み中...',
                     statusMessage: '',
                     statusClass: '',
-                    web3: null,
-                    contract: null,
-                    menuOpen: false
-                }
+                    menuOpen: false,
+                    artists: CONFIG.contracts.nfts,
+                    CONFIG: CONFIG,
+                };
             },
             mounted() {
-                this.initializeWeb3();
                 this.loadFromUrlParams();
                 window.addEventListener('keydown', this.handleEscape);
             },
-            
             methods: {
-                initializeWeb3() {
-                    this.web3 = new Web3('https://polygon-rpc.com');
-                    this.showStatus('接続完了', 'success');
-                },
-                
                 loadFromUrlParams() {
-                    const urlParams = new URLSearchParams(window.location.search);
-                    const ca = urlParams.get('ca');
-                    
+                    const params = new URLSearchParams(window.location.search);
+                    const ca = params.get('ca');
                     if (ca) {
                         this.contractAddress = ca;
                         this.loadContract();
                     }
                 },
-                
-                async loadContract() {
-                    if (!this.contractAddress) return;
-                    
-                    this.loading = true;
-                    this.tokens = [];
-                    this.contractInfo = {};
-                    this.showStatus('コントラクト情報を取得中...', 'info');
-                    
-                    try {
-                        this.contract = new this.web3.eth.Contract(ERC721_ENUMERABLE_ABI, this.contractAddress);
-                        
-                        // コントラクト基本情報を取得
-                        await this.fetchContractInfo();
-                        
-                        // トークン一覧を取得
-                        await this.fetchTokenList();
-                        
-                        this.showStatus(`${this.tokens.length}件のトークンを取得しました`, 'success');
-                    } catch (error) {
-                        console.error('Error loading contract:', error);
-                        this.showStatus(`エラー: ${error.message}`, 'error');
-                    }
-                    this.loading = false;
-                },
-                
-                async fetchContractInfo() {
-                    try {
-                        const [name, symbol, totalSupply] = await Promise.all([
-                            this.contract.methods.name().call(),
-                            this.contract.methods.symbol().call(),
-                            this.contract.methods.totalSupply().call()
-                        ]);
-                        
-                        this.contractInfo = {
-                            name,
-                            symbol,
-                            totalSupply
-                        };
-                    } catch (error) {
-                        console.error('Error fetching contract info:', error);
-                        this.contractInfo = {
-                            name: 'Unknown',
-                            symbol: 'Unknown',
-                            totalSupply: '0'
-                        };
-                    }
-                },
-                
-                async fetchTokenList() {
-                    try {
-                        const totalSupply = parseInt(this.contractInfo.totalSupply);
-                        const tokens = [];
-                        
-                        // バッチサイズを小さくして並列処理
-                        const batchSize = 50;
-                        for (let i = 0; i < totalSupply; i += batchSize) {
-                            const batch = [];
-                            for (let j = i; j < Math.min(i + batchSize, totalSupply); j++) {
-                                batch.push(this.contract.methods.tokenByIndex(j).call());
-                            }
-                            
-                            const batchResults = await Promise.allSettled(batch);
-                            batchResults.forEach(result => {
-                                if (result.status === 'fulfilled') {
-                                    tokens.push(result.value);
-                                }
-                            });
-                            
-                            // 進捗表示
-                            this.showStatus(`トークン取得中... ${Math.min(i + batchSize, totalSupply)}/${totalSupply}`, 'info');
-                        }
-                        
-                        this.tokens = tokens.sort((a, b) => parseInt(a) - parseInt(b));
-                    } catch (error) {
-                        console.error('Error fetching token list:', error);
-                        throw new Error('トークン一覧の取得に失敗しました');
-                    }
-                },
-                
-                loadSampleContract() {
-                    this.contractAddress = '0x72A02d559435319bD77462690E202a28c2Ba8623';
+
+                selectArtist(artist) {
+                    this.contractAddress = artist.address;
                     this.loadContract();
                 },
-                
+
+                async loadContract() {
+                    if (!this.contractAddress) return;
+
+                    this.loading = true;
+                    this.tokenCards = [];
+                    this.contractInfo = {};
+                    this.loadingMessage = 'コントラクト情報を取得中...';
+
+                    try {
+                        // コントラクト情報
+                        const info = await NFTHelper.getContractInfo(this.contractAddress);
+                        this.contractInfo = info;
+
+                        if (info.totalSupply === 0) {
+                            this.showStatus('このコントラクトにはトークンがありません', 'info');
+                            this.loading = false;
+                            return;
+                        }
+
+                        // トークンID列挙
+                        this.loadingMessage = `トークン一覧を取得中... (0/${info.totalSupply})`;
+                        const contract = NFTHelper.getContract(this.contractAddress);
+                        const batchSize = 20;
+                        const tokenIds = [];
+
+                        for (let i = 0; i < info.totalSupply; i += batchSize) {
+                            const batch = [];
+                            for (let j = i; j < Math.min(i + batchSize, info.totalSupply); j++) {
+                                batch.push(contract.methods.tokenByIndex(j).call());
+                            }
+                            const results = await Promise.allSettled(batch);
+                            results.forEach(r => {
+                                if (r.status === 'fulfilled') tokenIds.push(r.value.toString());
+                            });
+                            this.loadingMessage = `トークン一覧を取得中... (${Math.min(i + batchSize, info.totalSupply)}/${info.totalSupply})`;
+                        }
+
+                        // プレースホルダーカードを先に表示
+                        this.tokenCards = tokenIds.map(id => ({
+                            tokenId: id,
+                            name: null,
+                            image: null,
+                        }));
+
+                        this.showStatus(`${tokenIds.length}件のトークンを取得しました。メタデータを読み込み中...`, 'info');
+                        this.loading = false;
+
+                        // メタデータを非同期で取得（カードを順次更新）
+                        const metaBatchSize = 5;
+                        for (let i = 0; i < tokenIds.length; i += metaBatchSize) {
+                            const batch = tokenIds.slice(i, i + metaBatchSize).map(async (id, idx) => {
+                                const metadata = await NFTHelper.getTokenMetadata(this.contractAddress, id);
+                                if (metadata) {
+                                    const cardIdx = i + idx;
+                                    this.tokenCards[cardIdx] = {
+                                        tokenId: id,
+                                        name: metadata.name,
+                                        image: metadata.image,
+                                    };
+                                }
+                            });
+                            await Promise.allSettled(batch);
+                        }
+
+                        this.showStatus(`${tokenIds.length}件のトークンを表示中`, 'success');
+                    } catch (error) {
+                        console.error('Error:', error);
+                        this.showStatus(`エラー: ${error.message}`, 'error');
+                        this.loading = false;
+                    }
+                },
+
                 clearData() {
                     this.contractAddress = '';
-                    this.tokens = [];
+                    this.tokenCards = [];
                     this.contractInfo = {};
                     this.statusMessage = '';
                 },
-                
+
+                handleImageError(event) {
+                    event.target.style.display = 'none';
+                    // Show placeholder instead
+                    const placeholder = document.createElement('div');
+                    placeholder.className = 'token-card-placeholder';
+                    placeholder.textContent = '🏺';
+                    event.target.parentNode.insertBefore(placeholder, event.target);
+                },
+
                 showStatus(message, type) {
                     this.statusMessage = message;
                     this.statusClass = `status-${type}`;
-                    
-                    if (type !== 'info') {
-                        setTimeout(() => {
-                            if (this.statusMessage === message) {
-                                this.statusMessage = '';
-                            }
-                        }, 5000);
+                    if (type === 'success') {
+                        setTimeout(() => { if (this.statusMessage === message) this.statusMessage = ''; }, 5000);
                     }
                 },
-                
-                handleEscape(e) {
-                    if (e.key === 'Escape' && this.menuOpen) {
-                        this.closeMenu();
-                    }
-                },
-                
-                toggleMenu() {
-                    this.menuOpen = !this.menuOpen;
-                    document.body.style.overflow = this.menuOpen ? 'hidden' : '';
-                },
-                
-                closeMenu() {
-                    this.menuOpen = false;
-                    document.body.style.overflow = '';
-                }
+
+                handleEscape(e) { if (e.key === 'Escape' && this.menuOpen) this.closeMenu(); },
+                toggleMenu() { this.menuOpen = !this.menuOpen; document.body.style.overflow = this.menuOpen ? 'hidden' : ''; },
+                closeMenu() { this.menuOpen = false; document.body.style.overflow = ''; },
             }
         }).mount('#app');
     </script>
