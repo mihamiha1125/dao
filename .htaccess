@@ -1,0 +1,14 @@
+RewriteEngine On
+RewriteBase /dao/
+
+# /dao/regist/:discordId/:secret → /dao/regist/?discord=:discordId&secret=:secret
+RewriteRule ^regist/([0-9]+)/(.+)$ regist/?discord=$1&secret=$2 [L,R=302]
+
+# /dao/regist/:discordId → /dao/regist/?discord=:discordId
+RewriteRule ^regist/([0-9]+)/?$ regist/?discord=$1 [L,R=302]
+
+# /dao/account/:address → /dao/account.html?address=:address
+RewriteRule ^account/(0x[0-9a-fA-F]{40})/?$ account.html?address=$1 [L,R=302]
+
+# /dao/setting/:page → /dao/setting/:page.html
+RewriteRule ^setting/(admin|creator|contract)/?$ setting/$1.html [L,R=302]
