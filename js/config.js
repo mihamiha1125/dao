@@ -19,6 +19,9 @@ const CONFIG = {
     arweave: 'https://arweave.net/',
   },
 
+  // ── BOT API ──
+  botApi: 'https://bizendaobot-production.up.railway.app/',
+
   // ── コントラクト ──
   contracts: {
     // 作家NFT（ERC-721 Enumerable）

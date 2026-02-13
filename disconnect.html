@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>BizenDAO - ウォレット解除</title>
+    <link rel="stylesheet" href="css/style.css" />
+    <script src="https://cdn.jsdelivr.net/npm/web3@1.10.0/dist/web3.min.js" crossorigin="anonymous"></script>
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js" crossorigin="anonymous"></script>
+    <script src="js/config.js"></script>
+    <script src="js/cache.js"></script>
+    <script src="js/nft.js"></script>
+    <script src="js/wallet.js"></script>
+
+    <style>
+      main {
+        padding-top: 100px;
+        min-height: 100vh;
+      }
+
+      .disconnect-page {
+        max-width: 640px;
+        margin: 0 auto;
+        padding: 5px 20px 60px;
+      }
+
+      .page-title {
+        font-size: 28px;
+        margin-bottom: 32px;
+        font-family: "Times New Roman", "Hiragino Mincho ProN", serif;
+      }
+
+      .btn {
+        padding: 12px 24px;
+        border: 1px solid rgba(255,255,255,0.3);
+        background: transparent;
+        color: #f6f6f6;
+        border-radius: 8px;
+        font-size: 14px;
+        cursor: pointer;
+        transition: all 0.2s;
+      }
+
+      .btn:hover { background: rgba(255,255,255,0.1); }
+      .btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+      .btn-connect {
+        display: block;
+        width: 100%;
+        padding: 16px;
+        font-size: 16px;
+        background: rgba(255,255,255,0.06);
+        margin-bottom: 24px;
+      }
+
+      .btn-danger {
+        border-color: rgba(255,80,80,0.5);
+        color: #ff6666;
+        padding: 14px 32px;
+        font-size: 15px;
+      }
+
+      .btn-danger:hover:not(:disabled) {
+        background: rgba(255,80,80,0.12);
+      }
+
+      .section-card {
+        background: rgba(255,255,255,0.04);
+        border: 1px solid rgba(255,255,255,0.1);
+        border-radius: 10px;
+        padding: 24px;
+        margin-bottom: 24px;
+      }
+
+      .section-card h2 {
+        font-size: 18px;
+        margin-bottom: 14px;
+      }
+
+      .section-card p {
+        line-height: 1.7;
+        font-size: 14px;
+        opacity: 0.85;
+        margin-bottom: 12px;
+      }
+
+      .info-row {
+        display: flex;
+        gap: 8px;
+        align-items: center;
+        padding: 8px 0;
+        font-size: 14px;
+      }
+
+      .info-label {
+        opacity: 0.5;
+        min-width: 100px;
+      }
+
+      .info-value {
+        font-family: monospace;
+        word-break: break-all;
+      }
+
+      .status-badge {
+        display: inline-block;
+        padding: 4px 12px;
+        border-radius: 12px;
+        font-size: 12px;
+        margin-bottom: 16px;
+      }
+
+      .status-badge.has-sbt {
+        background: rgba(255,200,50,0.12);
+        border: 1px solid rgba(255,200,50,0.3);
+        color: #ffcc44;
+      }
+
+      .status-badge.no-sbt {
+        background: rgba(255,255,255,0.06);
+        border: 1px solid rgba(255,255,255,0.15);
+        color: rgba(255,255,255,0.5);
+      }
+
+      .status-badge.discord {
+        background: rgba(88,101,242,0.15);
+        border: 1px solid rgba(88,101,242,0.3);
+        color: #7289da;
+      }
+
+      .warning-text {
+        color: #ff9966;
+        font-size: 13px;
+        line-height: 1.6;
+      }
+
+      .success-card {
+        padding: 24px;
+        background: rgba(0,255,100,0.08);
+        border: 1px solid rgba(0,255,100,0.25);
+        border-radius: 10px;
+        text-align: center;
+        margin-bottom: 24px;
+      }
+
+      .success-card h3 { color: #66ff99; margin-bottom: 8px; }
+
+      .error-message {
+        padding: 12px 16px;
+        background: rgba(255,0,0,0.1);
+        border: 1px solid rgba(255,0,0,0.3);
+        border-radius: 6px;
+        color: #ff6666;
+        font-size: 13px;
+        margin-bottom: 16px;
+      }
+
+      .connect-prompt {
+        text-align: center;
+        padding: 60px 20px;
+      }
+
+      .loading-spinner {
+        display: inline-block;
+        width: 24px;
+        height: 24px;
+        border: 2px solid rgba(255,255,255,0.2);
+        border-radius: 50%;
+        border-top-color: #fff;
+        animation: spin 0.8s linear infinite;
+      }
+
+      @keyframes spin { to { transform: rotate(360deg); } }
+
+      .loading-center { text-align: center; padding: 30px; }
+
+      .link { color: #6bb6ff; text-decoration: none; }
+      .link:hover { text-decoration: underline; }
+    </style>
+  </head>
+  <body>
+    <div id="app">
+      <header class="site-header">
+        <div class="container header-inner">
+          <a href="index.html" class="logo"><img src="./img/349F5603-389E-48C6-81C9-1515A338A59B.png" alt="ロゴ"></a>
+          <div class="header-right">
+            <button class="lang-toggle" type="button">EN/JP</button>
+            <button class="nav-toggle" type="button" aria-label="メニューを開閉" @click="toggleMenu">
+              <span></span><span></span>
+            </button>
+          </div>
+        </div>
+        <div class="nav-overlay" :class="{ 'is-open': menuOpen }" @click="closeMenu"></div>
+        <aside class="nav-drawer" :class="{ 'is-open': menuOpen }" aria-label="サイトメニュー">
+          <ul class="drawer-nav">
+            <li><a href="./index.html">トップページ</a></li>
+            <li><a href="./artist-list.html">作家紹介</a></li>
+            <li><a href="./donation.html">寄付</a></li>
+            <li><a href="./account.html">マイページ</a></li>
+          </ul>
+        </aside>
+      </header>
+
+      <main>
+        <div class="disconnect-page">
+          <h1 class="page-title">ウォレット接続解除</h1>
+
+          <!-- 未接続 -->
+          <div v-if="!connected" class="connect-prompt">
+            <p style="margin-bottom: 24px; opacity: 0.7;">ウォレットを接続してください</p>
+            <button v-if="metamaskAvailable" class="btn btn-connect" @click="connectWallet" :disabled="connecting">
+              {{ connecting ? '接続中...' : '🦊 ウォレットを接続' }}
+            </button>
+            <p v-else style="opacity:0.5;">MetaMaskがインストールされていません</p>
+          </div>
+
+          <!-- 接続済み -->
+          <template v-else>
+            <div v-if="loading" class="loading-center"><span class="loading-spinner"></span></div>
+
+            <template v-else>
+              <div v-if="error" class="error-message">{{ error }}</div>
+
+              <!-- 解除完了 -->
+              <div v-if="disconnected" class="success-card">
+                <h3>✅ 接続解除が完了しました</h3>
+                <p style="opacity:0.7;">Discord連携が解除されました。</p>
+                <a href="index.html" class="btn" style="margin-top:12px;">トップへ戻る</a>
+              </div>
+
+              <template v-else>
+                <!-- 状態表示 -->
+                <div class="section-card">
+                  <h2>現在の状態</h2>
+                  <div class="info-row">
+                    <span class="info-label">EOA</span>
+                    <span class="info-value">{{ address }}</span>
+                  </div>
+                  <div class="info-row">
+                    <span class="info-label">メンバーSBT</span>
+                    <span>
+                      <span v-if="hasSbt" class="status-badge has-sbt">所有あり</span>
+                      <span v-else class="status-badge no-sbt">なし</span>
+                    </span>
+                  </div>
+                  <div class="info-row">
+                    <span class="info-label">Discord</span>
+                    <span v-if="discordId">
+                      <span class="status-badge discord">{{ discordId }}</span>
+                    </span>
+                    <span v-else style="opacity:0.5;">未連携</span>
+                  </div>
+                </div>
+
+                <!-- SBTがある場合：BURNが先 -->
+                <div v-if="hasSbt" class="section-card">
+                  <h2>📜 メンバーカードのBURN</h2>
+                  <p>ウォレット解除を行うためにはメンバーカード（SBT）のBURNが必要です。</p>
+                  <p>
+                    <a :href="'account.html?address=' + address" class="link">
+                      こちらからメンバーカードのSBTを開き、BURNを行なってください →
+                    </a>
+                  </p>
+                </div>
+
+                <!-- SBTがない場合：Discord解除可能 -->
+                <div v-else-if="discordId" class="section-card">
+                  <h2>🔌 Discord連携解除</h2>
+                  <p>
+                    DiscordID: <strong>{{ discordId }}</strong><br>
+                    こちらのウォレット接続を解除します。
+                  </p>
+                  <p class="warning-text">
+                    ⚠ この操作は取り消せません。再度連携するにはDiscordで /regist コマンドを実行してください。
+                  </p>
+                  <button class="btn btn-danger" @click="executeDisconnect" :disabled="sending" style="margin-top: 12px;">
+                    <span v-if="sending"><span class="loading-spinner" style="width:16px;height:16px;border-width:2px;"></span> 処理中...</span>
+                    <span v-else>DISCONNECT</span>
+                  </button>
+                </div>
+
+                <!-- Discord未連携 & SBTなし -->
+                <div v-else class="section-card">
+                  <h2>登録可能</h2>
+                  <p>{{ address }} は登録可能です。</p>
+                  <p>Discordにて <strong>/regist</strong> コマンドを実行してください。</p>
+                </div>
+              </template>
+            </template>
+          </template>
+        </div>
+      </main>
+    </div>
+
+    <script>
+      const { createApp } = Vue;
+      createApp({
+        data() {
+          return {
+            menuOpen: false,
+            connected: false,
+            connecting: false,
+            loading: false,
+            sending: false,
+            error: null,
+            address: null,
+            hasSbt: false,
+            discordId: null,
+            disconnected: false,
+          };
+        },
+        computed: {
+          metamaskAvailable() { return Wallet.isAvailable(); },
+        },
+        async mounted() {
+          const r = await Wallet.reconnect();
+          if (r) {
+            this.address = r.address;
+            this.connected = true;
+            await Wallet.ensurePolygon();
+            await this.checkStatus();
+          }
+        },
+        methods: {
+          async connectWallet() {
+            this.connecting = true; this.error = null;
+            try {
+              const { address } = await Wallet.connect();
+              await Wallet.ensurePolygon();
+              this.address = address;
+              this.connected = true;
+              await this.checkStatus();
+            } catch (e) { this.error = e.message; }
+            this.connecting = false;
+          },
+
+          async checkStatus() {
+            this.loading = true;
+            try {
+              // SBT確認
+              const sbtIds = await NFTHelper.getOwnedTokenIds(CONFIG.contracts.sbt.address, this.address);
+              this.hasSbt = sbtIds.length > 0;
+
+              // Discord連携確認
+              try {
+                const res = await fetch(CONFIG.botApi + 'member/' + this.address);
+                const data = await res.json();
+                this.discordId = data.DiscordId || null;
+              } catch (e) {
+                console.warn('Discord check failed:', e);
+                this.discordId = null;
+              }
+            } catch (e) {
+              this.error = '状態確認に失敗しました: ' + e.message;
+            }
+            this.loading = false;
+          },
+
+          async executeDisconnect() {
+            if (!confirm('本当に接続解除しますか？')) return;
+            this.sending = true; this.error = null;
+            try {
+              const res = await fetch(CONFIG.botApi + 'disconnect', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                  eoa: this.address,
+                  discordId: this.discordId,
+                }),
+              });
+              const result = await res.json();
+              console.log('disconnect result:', result);
+              this.disconnected = true;
+            } catch (e) {
+              this.error = '解除に失敗しました: ' + e.message;
+            }
+            this.sending = false;
+          },
+
+          toggleMenu() {
+            this.menuOpen = !this.menuOpen;
+            document.body.style.overflow = this.menuOpen ? 'hidden' : '';
+          },
+          closeMenu() {
+            this.menuOpen = false;
+            document.body.style.overflow = '';
+          },
+        },
+      }).mount('#app');
+    </script>
+  </body>
+</html>
