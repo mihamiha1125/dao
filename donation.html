@@ -1,0 +1,788 @@
+<!DOCTYPE html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>BizenDAO - 寄付</title>
+
+    <link rel="stylesheet" href="css/style.css" />
+
+    <!-- Web3.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/web3@1.10.0/dist/web3.min.js" crossorigin="anonymous"></script>
+
+    <!-- Vue 3 CDN -->
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js" crossorigin="anonymous"></script>
+
+    <!-- BizenDAO 共通モジュール -->
+    <script src="js/config.js"></script>
+    <script src="js/cache.js"></script>
+    <script src="js/nft.js"></script>
+    <script src="js/wallet.js"></script>
+
+    <style>
+      main {
+        padding-top: 100px;
+        min-height: 100vh;
+      }
+
+      .donation-page {
+        max-width: 720px;
+        margin: 0 auto;
+        padding: 5px 20px;
+      }
+
+      .page-title {
+        text-align: center;
+        font-size: 32px;
+        margin-bottom: 12px;
+        font-family: "Times New Roman", "Hiragino Mincho ProN", serif;
+        letter-spacing: 0.1em;
+      }
+
+      .page-subtitle {
+        text-align: center;
+        font-size: 15px;
+        opacity: 0.7;
+        margin-bottom: 40px;
+        line-height: 1.7;
+      }
+
+      /* 活動紹介 */
+      .mission-card {
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 12px;
+        padding: 28px;
+        margin-bottom: 32px;
+        line-height: 1.8;
+        font-size: 14px;
+        opacity: 0.85;
+      }
+
+      .mission-card h3 {
+        font-size: 18px;
+        margin-bottom: 12px;
+        opacity: 1;
+      }
+
+      /* 統計 */
+      .stats-row {
+        display: flex;
+        gap: 16px;
+        margin-bottom: 32px;
+        flex-wrap: wrap;
+      }
+
+      .stat-card {
+        flex: 1;
+        min-width: 140px;
+        padding: 16px 20px;
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 10px;
+        text-align: center;
+      }
+
+      .stat-number {
+        font-size: 24px;
+        font-weight: 700;
+        margin-bottom: 4px;
+      }
+
+      .stat-label {
+        font-size: 12px;
+        opacity: 0.6;
+      }
+
+      /* ボタン共通 */
+      .btn {
+        padding: 12px 24px;
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        background: transparent;
+        color: #f6f6f6;
+        border-radius: 8px;
+        font-size: 14px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+      }
+
+      .btn:hover {
+        background: rgba(255, 255, 255, 0.1);
+        border-color: rgba(255, 255, 255, 0.5);
+      }
+
+      .btn:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+      }
+
+      .btn-connect {
+        display: block;
+        width: 100%;
+        padding: 16px;
+        font-size: 16px;
+        background: rgba(255, 255, 255, 0.08);
+        border-color: rgba(255, 255, 255, 0.4);
+        margin-bottom: 24px;
+      }
+
+      .no-metamask {
+        padding: 16px 24px;
+        background: rgba(255, 100, 100, 0.1);
+        border: 1px solid rgba(255, 100, 100, 0.3);
+        border-radius: 8px;
+        font-size: 14px;
+        text-align: center;
+        margin-bottom: 24px;
+      }
+
+      .no-metamask a {
+        color: #6bb6ff;
+        text-decoration: none;
+      }
+
+      /* 寄付フォーム */
+      .donate-form {
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 12px;
+        padding: 28px;
+        margin-bottom: 32px;
+      }
+
+      .form-section {
+        margin-bottom: 24px;
+      }
+
+      .form-label {
+        font-size: 14px;
+        opacity: 0.8;
+        margin-bottom: 12px;
+        display: block;
+      }
+
+      .wallet-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 20px;
+        padding: 12px 16px;
+        background: rgba(255, 255, 255, 0.03);
+        border-radius: 8px;
+      }
+
+      .wallet-address {
+        font-family: monospace;
+        font-size: 14px;
+      }
+
+      .wallet-balance {
+        font-size: 13px;
+        opacity: 0.7;
+      }
+
+      /* プリセットボタン */
+      .preset-row {
+        display: flex;
+        gap: 12px;
+        flex-wrap: wrap;
+        margin-bottom: 16px;
+      }
+
+      .preset-btn {
+        flex: 1;
+        min-width: 80px;
+        padding: 14px 8px;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        background: rgba(255, 255, 255, 0.05);
+        color: #f6f6f6;
+        border-radius: 8px;
+        font-size: 16px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        text-align: center;
+      }
+
+      .preset-btn:hover {
+        background: rgba(255, 255, 255, 0.12);
+        border-color: rgba(255, 255, 255, 0.4);
+      }
+
+      .preset-btn.selected {
+        background: rgba(255, 255, 255, 0.18);
+        border-color: rgba(255, 255, 255, 0.5);
+      }
+
+      .preset-unit {
+        font-size: 11px;
+        font-weight: 400;
+        opacity: 0.6;
+        display: block;
+        margin-top: 2px;
+      }
+
+      /* カスタム入力 */
+      .custom-input-row {
+        display: flex;
+        gap: 12px;
+        align-items: center;
+      }
+
+      .custom-input {
+        flex: 1;
+        padding: 12px 16px;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        background: rgba(255, 255, 255, 0.05);
+        color: #f6f6f6;
+        border-radius: 8px;
+        font-size: 16px;
+        font-family: monospace;
+      }
+
+      .custom-input:focus {
+        outline: none;
+        border-color: rgba(255, 255, 255, 0.4);
+        background: rgba(255, 255, 255, 0.08);
+      }
+
+      .input-unit {
+        font-size: 14px;
+        opacity: 0.7;
+        white-space: nowrap;
+      }
+
+      /* JPY表示 */
+      .jpy-estimate {
+        margin-top: 8px;
+        font-size: 13px;
+        opacity: 0.6;
+        text-align: right;
+      }
+
+      /* メモ */
+      .memo-input {
+        width: 100%;
+        padding: 12px 16px;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        background: rgba(255, 255, 255, 0.05);
+        color: #f6f6f6;
+        border-radius: 8px;
+        font-size: 14px;
+        box-sizing: border-box;
+      }
+
+      .memo-input:focus {
+        outline: none;
+        border-color: rgba(255, 255, 255, 0.4);
+      }
+
+      /* 寄付ボタン */
+      .btn-donate {
+        display: block;
+        width: 100%;
+        padding: 18px;
+        font-size: 18px;
+        font-weight: 600;
+        background: rgba(138, 43, 226, 0.15);
+        border-color: rgba(138, 43, 226, 0.4);
+        letter-spacing: 0.05em;
+      }
+
+      .btn-donate:hover:not(:disabled) {
+        background: rgba(138, 43, 226, 0.25);
+        border-color: rgba(138, 43, 226, 0.6);
+      }
+
+      /* 結果 */
+      .result-card {
+        padding: 24px;
+        border-radius: 12px;
+        margin-bottom: 24px;
+        text-align: center;
+      }
+
+      .result-success {
+        background: rgba(0, 255, 100, 0.08);
+        border: 1px solid rgba(0, 255, 100, 0.25);
+      }
+
+      .result-success h3 {
+        color: #66ff99;
+        font-size: 20px;
+        margin-bottom: 12px;
+      }
+
+      .result-tx {
+        font-family: monospace;
+        font-size: 13px;
+        opacity: 0.7;
+        word-break: break-all;
+        margin-bottom: 12px;
+      }
+
+      .result-link {
+        color: #6bb6ff;
+        text-decoration: none;
+        font-size: 14px;
+      }
+
+      .result-link:hover {
+        text-decoration: underline;
+      }
+
+      /* エラー */
+      .error-message {
+        padding: 16px 20px;
+        background: rgba(255, 0, 0, 0.1);
+        border: 1px solid rgba(255, 0, 0, 0.3);
+        border-radius: 8px;
+        color: #ff6666;
+        margin-bottom: 20px;
+        font-size: 14px;
+      }
+
+      /* 寄付履歴 */
+      .history-section {
+        margin-top: 40px;
+      }
+
+      .history-title {
+        font-size: 18px;
+        margin-bottom: 16px;
+        padding-bottom: 12px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      }
+
+      .history-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 12px 0;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+        font-size: 14px;
+      }
+
+      .history-amount {
+        font-weight: 600;
+        font-family: monospace;
+      }
+
+      .history-date {
+        opacity: 0.5;
+        font-size: 13px;
+      }
+
+      .history-detail {
+        opacity: 0.6;
+        font-size: 13px;
+        max-width: 50%;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
+      .history-empty {
+        text-align: center;
+        padding: 20px;
+        opacity: 0.4;
+        font-style: italic;
+      }
+
+      /* ネットワーク */
+      .network-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 6px 16px;
+        background: rgba(138, 43, 226, 0.1);
+        border: 1px solid rgba(138, 43, 226, 0.3);
+        border-radius: 20px;
+        font-size: 14px;
+      }
+
+      .network-dot {
+        width: 8px;
+        height: 8px;
+        background: #8a2be2;
+        border-radius: 50%;
+      }
+
+      /* ローディング */
+      .loading-spinner {
+        display: inline-block;
+        width: 20px;
+        height: 20px;
+        border: 2px solid rgba(255, 255, 255, 0.3);
+        border-radius: 50%;
+        border-top-color: #fff;
+        animation: spin 0.8s linear infinite;
+      }
+
+      @keyframes spin {
+        to { transform: rotate(360deg); }
+      }
+
+      @media (max-width: 600px) {
+        .preset-btn { min-width: 60px; }
+        .stats-row { gap: 10px; }
+        .stat-card { min-width: 100px; padding: 12px; }
+      }
+    </style>
+  </head>
+  <body>
+    <div id="app">
+      <!-- ヘッダー -->
+      <header class="site-header">
+        <div class="container header-inner">
+          <a href="index.html" class="logo"><img src="./img/349F5603-389E-48C6-81C9-1515A338A59B.png" alt="ロゴ"></a>
+          <div class="header-right">
+            <button class="lang-toggle" type="button">EN/JP</button>
+            <button class="nav-toggle" type="button" aria-label="メニューを開閉" @click="toggleMenu">
+              <span></span><span></span>
+            </button>
+          </div>
+        </div>
+        <div class="nav-overlay" :class="{ 'is-open': menuOpen }" @click="closeMenu"></div>
+        <aside class="nav-drawer" :class="{ 'is-open': menuOpen }" aria-label="サイトメニュー">
+          <ul class="drawer-nav">
+            <li><a href="./index.html">トップページ</a></li>
+            <li><a href="./artist-list.html">作家紹介</a></li>
+            <li><a href="./index.html#company">会社概要</a></li>
+            <li><a href="./index.html#discord">Discordリンク</a></li>
+            <li><a href="./index.html#meta">作品使用歴作成</a></li>
+            <li><a href="./donation.html">寄付</a></li>
+            <li><a href="./account.html">マイページ</a></li>
+          </ul>
+        </aside>
+      </header>
+
+      <main>
+        <div class="donation-page">
+          <h1 class="page-title">BizenDAOを応援する</h1>
+          <p class="page-subtitle">
+            備前焼の文化を守り、デジタル技術で世界に届ける。<br>
+            あなたの寄付がDAOの活動を支えます。
+          </p>
+
+          <!-- 活動紹介 -->
+          <div class="mission-card">
+            <h3>BizenDAOの活動</h3>
+            BizenDAOは、備前焼の伝統文化をブロックチェーン技術で保存・発信するコミュニティです。
+            作家のNFT作品の発行支援、箱書き（SBT）による来歴証明、
+            そしてメタデータの永続化（Arweave）を通じて、
+            備前焼の価値を次世代に繋げます。
+            寄付金はアーティスト支援、インフラ維持、コミュニティ運営に使われます。
+          </div>
+
+          <!-- 全体統計 -->
+          <div class="stats-row">
+            <div class="stat-card">
+              <div class="stat-number">{{ totalDonations }} <small style="font-size:12px">POL</small></div>
+              <div class="stat-label">累計寄付額</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-number">{{ totalUsed }} <small style="font-size:12px">POL</small></div>
+              <div class="stat-label">累計使用ポイント</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-number">{{ totalSupply }} <small style="font-size:12px">POL</small></div>
+              <div class="stat-label">現在の残高</div>
+            </div>
+          </div>
+
+          <!-- エラー -->
+          <div v-if="error" class="error-message">{{ error }}</div>
+
+          <!-- 送金完了 -->
+          <div v-if="txHash" class="result-card result-success">
+            <h3>✅ ありがとうございます！</h3>
+            <div class="result-tx">tx: {{ txHash }}</div>
+            <a :href="CONFIG.chain.explorer + '/tx/' + txHash" target="_blank" class="result-link">
+              Polygonscanで確認 ↗
+            </a>
+          </div>
+
+          <!-- ウォレット未接続 -->
+          <div v-if="!connected">
+            <button v-if="metamaskAvailable" class="btn btn-connect" @click="connectWallet" :disabled="connecting">
+              <span v-if="connecting">接続中...</span>
+              <span v-else>🦊 ウォレットを接続して寄付する</span>
+            </button>
+            <div v-else class="no-metamask">
+              MetaMaskがインストールされていません。
+              <a href="https://metamask.io/download/" target="_blank">MetaMaskをインストール →</a>
+            </div>
+          </div>
+
+          <!-- 寄付フォーム -->
+          <div v-else class="donate-form">
+            <div class="wallet-row">
+              <span class="wallet-address">🦊 {{ shortAddress }}</span>
+              <span class="wallet-balance">{{ balance }} POL</span>
+            </div>
+
+            <!-- 金額プリセット -->
+            <div class="form-section">
+              <label class="form-label">寄付金額</label>
+              <div class="preset-row">
+                <button v-for="p in presets" :key="p"
+                  class="preset-btn" :class="{ selected: amount === p }"
+                  @click="selectPreset(p)">
+                  {{ p }}<span class="preset-unit">POL</span>
+                </button>
+              </div>
+              <div class="custom-input-row">
+                <input type="number" v-model.number="amount" class="custom-input"
+                       placeholder="カスタム金額" step="0.1" min="0" />
+                <span class="input-unit">POL</span>
+              </div>
+              <div v-if="jpyEstimate" class="jpy-estimate">
+                ≈ {{ jpyEstimate }} JPY
+              </div>
+            </div>
+
+            <!-- メモ -->
+            <div class="form-section">
+              <label class="form-label">メッセージ（任意）</label>
+              <input type="text" v-model="detail" class="memo-input" placeholder="応援メッセージなど" />
+            </div>
+
+            <!-- 寄付ボタン -->
+            <button class="btn btn-donate" @click="executeDonate"
+                    :disabled="!amount || amount <= 0 || sending || amount > parseFloat(balance)">
+              <span v-if="sending"><span class="loading-spinner"></span> 送信中...</span>
+              <span v-else>💎 {{ amount || 0 }} POL を寄付する</span>
+            </button>
+          </div>
+
+          <!-- 自分の寄付履歴 -->
+          <div v-if="connected && history.length > 0" class="history-section">
+            <h3 class="history-title">あなたの寄付履歴</h3>
+            <div v-for="(h, i) in history" :key="i" class="history-item">
+              <span class="history-amount">{{ weiToEth(h.amount) }} POL</span>
+              <span class="history-detail">{{ h.detail || '' }}</span>
+              <span class="history-date">{{ formatDate(h.date) }}</span>
+            </div>
+          </div>
+          <div v-else-if="connected && !historyLoading" class="history-section">
+            <h3 class="history-title">あなたの寄付履歴</h3>
+            <div class="history-empty">まだ寄付履歴がありません</div>
+          </div>
+
+          <!-- ネットワーク -->
+          <div style="margin-top: 32px;">
+            <div class="network-badge">
+              <span class="network-dot"></span>
+              <span>Polygon Mainnet</span>
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+
+    <script>
+      const { createApp } = Vue;
+
+      createApp({
+        data() {
+          return {
+            menuOpen: false,
+            connected: false,
+            connecting: false,
+            sending: false,
+            error: null,
+            address: null,
+            balance: '0',
+            amount: null,
+            detail: '',
+            txHash: null,
+            presets: CONFIG.contracts.donation.presets,
+            CONFIG: CONFIG,
+            // Stats
+            totalDonations: '...',
+            totalUsed: '...',
+            totalSupply: '...',
+            // History
+            history: [],
+            historyLoading: false,
+            // JPY
+            maticJpy: null,
+          };
+        },
+
+        computed: {
+          metamaskAvailable() {
+            return Wallet.isAvailable();
+          },
+          shortAddress() {
+            return Wallet.shortAddress(this.address);
+          },
+          jpyEstimate() {
+            if (!this.amount || !this.maticJpy) return null;
+            return Math.round(this.amount * this.maticJpy).toLocaleString();
+          },
+        },
+
+        async mounted() {
+          this.loadGlobalStats();
+          this.fetchMaticPrice();
+        },
+
+        methods: {
+          // ── ウォレット ──
+
+          async connectWallet() {
+            this.connecting = true;
+            this.error = null;
+            try {
+              const { address } = await Wallet.connect();
+              await Wallet.ensurePolygon();
+              this.address = address;
+              this.connected = true;
+              await this.loadWalletData();
+
+              Wallet.onAccountChange((newAddr) => {
+                if (newAddr) {
+                  this.address = newAddr;
+                  this.loadWalletData();
+                } else {
+                  this.connected = false;
+                  this.address = null;
+                }
+              });
+            } catch (e) {
+              this.error = e.message;
+            }
+            this.connecting = false;
+          },
+
+          async loadWalletData() {
+            // 残高
+            const web3 = NFTHelper.getWeb3();
+            const bal = await web3.eth.getBalance(this.address);
+            this.balance = parseFloat(web3.utils.fromWei(bal, 'ether')).toFixed(4);
+
+            // 寄付履歴
+            this.loadHistory();
+          },
+
+          // ── 統計（ウォレット接続不要） ──
+
+          async loadGlobalStats() {
+            try {
+              const web3 = NFTHelper.getWeb3();
+              const contract = new web3.eth.Contract(ABI.Donate, CONFIG.contracts.donation.address);
+
+              const [total, used, supply] = await Promise.all([
+                contract.methods._allTotalDonations().call(),
+                contract.methods._allUsedPoints().call(),
+                contract.methods.totalSupply().call(),
+              ]);
+
+              this.totalDonations = this.weiToEth(total);
+              this.totalUsed = this.weiToEth(used);
+              this.totalSupply = this.weiToEth(supply);
+            } catch (e) {
+              console.error('loadGlobalStats error:', e);
+            }
+          },
+
+          // ── 寄付履歴 ──
+
+          async loadHistory() {
+            this.historyLoading = true;
+            try {
+              const web3 = NFTHelper.getWeb3();
+              const contract = new web3.eth.Contract(ABI.Donate, CONFIG.contracts.donation.address);
+              const result = await contract.methods.getDonationHistory(this.address).call();
+              // result は配列の配列 or struct配列
+              this.history = result.map(h => ({
+                amount: h.amount || h[0],
+                date: h.date || h[1],
+                detail: h.detail || h[2],
+              })).reverse(); // 新しい順
+            } catch (e) {
+              console.error('loadHistory error:', e);
+            }
+            this.historyLoading = false;
+          },
+
+          // ── 寄付実行 ──
+
+          async executeDonate() {
+            if (!this.amount || this.amount <= 0) return;
+            this.sending = true;
+            this.error = null;
+            this.txHash = null;
+
+            try {
+              const web3 = new Web3(window.ethereum);
+              const contract = new web3.eth.Contract(ABI.Donate, CONFIG.contracts.donation.address);
+              const weiAmount = web3.utils.toWei(String(this.amount), 'ether');
+
+              const tx = await contract.methods
+                .donate(this.address, this.detail || 'donation', '0')
+                .send({
+                  from: this.address,
+                  value: weiAmount,
+                });
+
+              this.txHash = tx.transactionHash;
+              this.amount = null;
+              this.detail = '';
+
+              // リロード
+              this.loadWalletData();
+              this.loadGlobalStats();
+            } catch (e) {
+              if (e.code === 4001 || (e.message && e.message.includes('denied'))) {
+                this.error = 'トランザクションがキャンセルされました';
+              } else {
+                this.error = e.message || '寄付に失敗しました';
+              }
+              console.error('donate error:', e);
+            }
+            this.sending = false;
+          },
+
+          // ── MATIC価格 ──
+
+          async fetchMaticPrice() {
+            try {
+              const res = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=matic-network&vs_currencies=jpy');
+              const data = await res.json();
+              this.maticJpy = data['matic-network']?.jpy || null;
+            } catch (e) {
+              console.warn('Price fetch failed:', e);
+            }
+          },
+
+          // ── ユーティリティ ──
+
+          selectPreset(val) {
+            this.amount = val;
+          },
+
+          weiToEth(wei) {
+            return (Number(wei) / 1e18).toFixed(4);
+          },
+
+          formatDate(unixTime) {
+            const d = new Date(Number(unixTime) * 1000);
+            return d.toLocaleDateString('ja-JP', { timeZone: 'Asia/Tokyo' });
+          },
+
+          toggleMenu() {
+            this.menuOpen = !this.menuOpen;
+            document.body.style.overflow = this.menuOpen ? 'hidden' : '';
+          },
+          closeMenu() {
+            this.menuOpen = false;
+            document.body.style.overflow = '';
+          },
+        },
+      }).mount('#app');
+    </script>
+  </body>
+</html>
