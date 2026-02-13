@@ -189,6 +189,13 @@
         font-family: monospace;
       }
 
+      .nft-owner {
+        font-size: 14px;
+        opacity: 0.7;
+        margin: 6px 0 0;
+        font-family: monospace;
+      }
+
       .nft-layout {
         display: grid;
         grid-template-columns: 1fr 1fr;
@@ -596,6 +603,9 @@
                 <h2 class="nft-title">{{ nft.name || 'Unnamed NFT' }}</h2>
                 <a :href="'contract.html?ca=' + contractAddress" class="contract-link">Contract Token List</a>
                 <p class="nft-token-id">Token ID: #{{ nft.tokenId }}</p>
+                <p v-if="ownerAddress" class="nft-owner">
+                  Owner: <a :href="'account.html?address=' + ownerAddress" class="contract-link">{{ shortAddr(ownerAddress) }}</a>
+                </p>
               </div>
 
               <div class="nft-layout">
@@ -799,6 +809,7 @@
             tbaAddress: null,
             tbaAssets: [],
             tbaLoading: false,
+            ownerAddress: null,
           };
         },
         computed: {
@@ -856,6 +867,9 @@
               if (nft) this.nfts = [nft];
               this.showStatus("取得完了", "success");
 
+              // Owner取得
+              this.fetchOwner(this.tokenId || 1);
+
               // TBA取得（NFT読み込み成功後）
               this.loadTba(this.tokenId || 1);
             } catch (error) {
@@ -902,6 +916,15 @@
             } catch (error) {
               console.error("fetchTokenMetadata error:", error);
               return null;
+            }
+          },
+
+          async fetchOwner(tokenId) {
+            try {
+              const contract = NFTHelper.getContract(this.contractAddress);
+              this.ownerAddress = await contract.methods.ownerOf(tokenId).call();
+            } catch (e) {
+              console.error('fetchOwner error:', e);
             }
           },
 
