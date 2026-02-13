@@ -38,7 +38,7 @@ const CONFIG = {
     tba: {
       registry:       '0x63c8A3536E4A647D48fC0076D442e3243f7e773b',
       implementation: '0xa8a05744C04c7AD0D31Fcee368aC18040832F1c1',
-      salt: 0,
+      salt: 1,
     },
 
     // 寄付先
